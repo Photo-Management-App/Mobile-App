@@ -13,6 +13,11 @@
         android:theme="@style/Theme.PhotoManagementApp"
         tools:targetApi="31">
         <activity
+            android:name=".SeeAlbums"
+            android:exported="false"
+            android:label="@string/title_activity_see_albums"
+            android:theme="@style/Theme.PhotoManagementApp.NoActionBar" />
+        <activity
             android:name=".Gallery"
             android:exported="false" />
         <activity
