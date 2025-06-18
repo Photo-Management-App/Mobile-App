@@ -118,6 +118,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPostExecute(String result) {
         Toast.makeText(MainActivity.this, result, Toast.LENGTH_LONG).show();
+        if ("Login successful".equals(result)) {
+            Intent intent = new Intent(MainActivity.this, SeeAlbums.class);
+            startActivity(intent);
+            finish(); // opcjonalnie, żeby zamknąć ekran logowania
+        }
     }
 }
 

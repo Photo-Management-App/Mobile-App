@@ -1,42 +1,47 @@
 package com.example.photomanagementapp;
 
 import android.os.Bundle;
-
-import com.google.android.material.appbar.CollapsingToolbarLayout;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
+import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
-import android.view.View;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.photomanagementapp.databinding.ActivitySeeAlbumsBinding;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SeeAlbums extends AppCompatActivity {
 
     private ActivitySeeAlbumsBinding binding;
+    private RecyclerView recyclerView;
+    private PhotoAdapter photoAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.e("works","works");
         super.onCreate(savedInstanceState);
-
         binding = ActivitySeeAlbumsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        Toolbar toolbar = binding.toolbar;
-        setSupportActionBar(toolbar);
-        CollapsingToolbarLayout toolBarLayout = binding.toolbarLayout;
-        toolBarLayout.setTitle(getTitle());
+        setSupportActionBar(binding.toolbar);
+        binding.toolbarLayout.setTitle(getTitle());
 
-        FloatingActionButton fab = binding.fab;
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null)
-                        .setAnchorView(R.id.fab).show();
-            }
-        });
+        recyclerView = findViewById(R.id.recyclerViewPhotos);
+        recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+
+        // Load sample images from drawable
+        List<Integer> imageList = new ArrayList<>();
+        imageList.add(R.drawable.screenshot);
+        imageList.add(R.drawable.dragon);
+        imageList.add(R.drawable.rect77);
+        imageList.add(R.drawable.donut);
+        Log.d("SeeAlbums", "Image list size: " + imageList.size());
+        Log.e("works2","works2");
+
+
+        photoAdapter = new PhotoAdapter(imageList);
+        recyclerView.setAdapter(photoAdapter);
     }
 }
