@@ -29,6 +29,7 @@
             android:name=".ActivityRegister"
             android:exported="false"
             android:theme="@style/Theme.PhotoManagementApp" />
+        <activity android:name=".PhotoDetailActivity" />
         <activity
             android:name=".MainActivity"
             android:exported="true">

@@ -56,14 +56,14 @@
 
             <Button
                 android:id="@+id/button2"
-                android:layout_width="115dp"
+                android:layout_width="138dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:text="Settings" />
 
             <ImageButton
                 android:id="@+id/imageButton"
-                android:layout_width="55dp"
+                android:layout_width="70dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 tools:srcCompat="@tools:sample/avatars" />

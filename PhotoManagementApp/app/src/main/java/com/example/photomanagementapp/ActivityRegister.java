@@ -23,32 +23,32 @@ import java.net.URL;
 
 public class ActivityRegister extends AppCompatActivity {
 
-    EditText usernameEditText, passwordEditText;
+    EditText usernameEditText, passwordEditText, emailEditText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_register);
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
+        usernameEditText = findViewById(R.id.usernameEditText);
+        passwordEditText = findViewById(R.id.passwordEditText);
+        emailEditText = findViewById(R.id.emailEditText); // Make sure this exists in your XML
+
         findViewById(R.id.btnLogin).setOnClickListener(v -> {
-
-            usernameEditText = findViewById(R.id.usernameEditText);
-            passwordEditText = findViewById(R.id.passwordEditText);
-
             String username = usernameEditText.getText().toString();
             String password = passwordEditText.getText().toString();
+            String email = emailEditText.getText().toString();
 
-            new RegisterTask().execute(username, password);
-
+            new RegisterTask().execute(username, password, email);
         });
 
-        // Go to login activity on btnLogin click
         findViewById(R.id.btnHaveAccount).setOnClickListener(v -> {
             Intent intent = new Intent(this, MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
@@ -61,6 +61,7 @@ public class ActivityRegister extends AppCompatActivity {
         protected String doInBackground(String... params) {
             String login = params[0];
             String password = params[1];
+            String email = params[2];
 
             try {
                 URL url = new URL("http://ec2-13-60-9-150.eu-north-1.compute.amazonaws.com:8000/register");
@@ -70,18 +71,16 @@ public class ActivityRegister extends AppCompatActivity {
                 conn.setDoOutput(true);
                 conn.setDoInput(true);
 
-                // Create JSON object with login and password
                 JSONObject jsonParam = new JSONObject();
                 jsonParam.put("login", login);
                 jsonParam.put("password", password);
+                jsonParam.put("email", email); // Include email
 
-                // Send JSON data to server
                 try (OutputStream os = conn.getOutputStream()) {
                     byte[] input = jsonParam.toString().getBytes("utf-8");
                     os.write(input, 0, input.length);
                 }
 
-                // Read server response
                 try (BufferedReader reader = new BufferedReader(
                         new InputStreamReader(conn.getInputStream(), "utf-8"))) {
                     StringBuilder response = new StringBuilder();
@@ -96,11 +95,8 @@ public class ActivityRegister extends AppCompatActivity {
 
                     if (jsonResponse.has("error_type")) {
                         return "Register failed: " + jsonResponse.getString("message");
-                    } else if (jsonResponse.has("token")) {
-                        // Optionally store token here if you want
-                        return "Register successful";
                     } else {
-                        return "Register failed: unknown response";
+                        return "Register successful";
                     }
                 }
             } catch (Exception e) {
@@ -114,5 +110,4 @@ public class ActivityRegister extends AppCompatActivity {
             Toast.makeText(ActivityRegister.this, result, Toast.LENGTH_LONG).show();
         }
     }
-
 }

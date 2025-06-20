@@ -100,6 +100,7 @@
         app:layout_constraintVertical_bias="0.0" />
 
     <EditText
+        android:id="@+id/emailEditText"
         android:layout_width="331dp"
         android:layout_height="66dp"
         android:background="@drawable/rounded_edittext"

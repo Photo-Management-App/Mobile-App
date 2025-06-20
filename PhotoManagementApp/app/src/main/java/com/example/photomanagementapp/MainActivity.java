@@ -1,10 +1,10 @@
 package com.example.photomanagementapp;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -32,7 +32,16 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_login);
 
-
+        // Check if user is already logged in
+        SharedPreferences prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+        String savedUsername = prefs.getString("username", null);
+        if (savedUsername != null) {
+            // User already logged in, go to albums
+            Intent intent = new Intent(MainActivity.this, SeeAlbums.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -40,12 +49,10 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        //Go to register activity on btnNewHere click
         findViewById(R.id.btnNewHere).setOnClickListener(v -> {
             startActivity(new Intent(this, ActivityRegister.class));
         });
 
-        //Go to forgot password activity on btnForgot click
         findViewById(R.id.btnForgot).setOnClickListener(v -> {
             startActivity(new Intent(this, ActivityForgotPassword.class));
         });
@@ -60,70 +67,67 @@ public class MainActivity extends AppCompatActivity {
             new LoginTask().execute(username, password);
         });
     }
+
     private class LoginTask extends AsyncTask<String, Void, String> {
-    @Override
-    protected String doInBackground(String... params) {
-        try {
-            URL url = new URL("http://ec2-13-60-9-150.eu-north-1.compute.amazonaws.com:8000/login");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json; utf-8");
-            conn.setDoOutput(true);
-            conn.setDoInput(true); // <-- Important for reading response
+        String enteredUsername = "";
 
-            // Create JSON payload
-            JSONObject jsonParam = new JSONObject();
-            jsonParam.put("login", params[0]); // Note: field name should be "login" not "username"
-            jsonParam.put("password", params[1]);
-
-            // Send JSON to server
-            try (OutputStream os = conn.getOutputStream()) {
-                byte[] input = jsonParam.toString().getBytes("utf-8");
-                os.write(input, 0, input.length);
-            }
-
-            // Read response from server
-            BufferedReader reader = new BufferedReader(new InputStreamReader(
-                    conn.getInputStream(), "utf-8"));
-            StringBuilder response = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                response.append(line.trim());
-            }
-            reader.close();
-
-            Log.d("LoginTask", "Server response: " + response.toString());
-
-            // Parse JSON response
+        @Override
+        protected String doInBackground(String... params) {
             try {
+                enteredUsername = params[0];
+                URL url = new URL("http://ec2-13-60-9-150.eu-north-1.compute.amazonaws.com:8000/login");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json; utf-8");
+                conn.setDoOutput(true);
+                conn.setDoInput(true);
+
+                JSONObject jsonParam = new JSONObject();
+                jsonParam.put("login", enteredUsername);
+                jsonParam.put("password", params[1]);
+
+                try (OutputStream os = conn.getOutputStream()) {
+                    byte[] input = jsonParam.toString().getBytes("utf-8");
+                    os.write(input, 0, input.length);
+                }
+
+                BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(conn.getInputStream(), "utf-8"));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line.trim());
+                }
+                reader.close();
+
+                Log.d("LoginTask", "Server response: " + response.toString());
+
                 JSONObject json = new JSONObject(response.toString());
                 if (json.has("error_type")) {
                     return "Login failed: " + json.getString("message");
                 } else if (json.has("token")) {
-                    // You can also store token here if needed
                     return "Login successful";
                 } else {
                     return "Login failed: unknown response";
                 }
+
             } catch (Exception e) {
-                return "Login failed: invalid server response";
+                Log.e("LoginTask", "Error", e);
+                return "Exception: " + e.getMessage();
             }
+        }
 
-        } catch (Exception e) {
-            Log.e("LoginTask", "Error", e);
-            return "Exception: " + e.getMessage();
+        @Override
+        protected void onPostExecute(String result) {
+            Toast.makeText(MainActivity.this, result, Toast.LENGTH_LONG).show();
+            if ("Login successful".equals(result)) {
+                SharedPreferences prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+                prefs.edit().putString("username", enteredUsername).apply();
+
+                Intent intent = new Intent(MainActivity.this, SeeAlbums.class);
+                startActivity(intent);
+                finish();
+            }
         }
     }
-
-    @Override
-    protected void onPostExecute(String result) {
-        Toast.makeText(MainActivity.this, result, Toast.LENGTH_LONG).show();
-        if ("Login successful".equals(result)) {
-            Intent intent = new Intent(MainActivity.this, SeeAlbums.class);
-            startActivity(intent);
-            finish(); // opcjonalnie, żeby zamknąć ekran logowania
-        }
-    }
-}
-
 }

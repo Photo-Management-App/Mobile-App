@@ -1,12 +1,9 @@
 package com.example.photomanagementapp;
 
-import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,27 +12,36 @@ import java.util.List;
 
 public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.PhotoViewHolder> {
 
-    private List<Integer> photoList;
+    private final List<Integer> photoResIds;
+    private final OnPhotoClickListener listener;
 
-    public PhotoAdapter(List<Integer> photoList) {
-        this.photoList = photoList;
+    public interface OnPhotoClickListener {
+        void onPhotoClick(int photoResId);
+    }
+
+    public PhotoAdapter(List<Integer> photoResIds, OnPhotoClickListener listener) {
+        this.photoResIds = photoResIds;
+        this.listener = listener;
     }
 
     @NonNull
     @Override
     public PhotoViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.photo_item, parent, false);
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.photo_item, parent, false);
         return new PhotoViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull PhotoViewHolder holder, int position) {
-        holder.imageView.setImageResource(photoList.get(position));
+        int resId = photoResIds.get(position);
+        holder.imageView.setImageResource(resId);
+        holder.imageView.setOnClickListener(v -> listener.onPhotoClick(resId));
     }
 
     @Override
     public int getItemCount() {
-        return photoList.size();
+        return photoResIds.size();
     }
 
     static class PhotoViewHolder extends RecyclerView.ViewHolder {
@@ -43,7 +49,7 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.PhotoViewHol
 
         public PhotoViewHolder(@NonNull View itemView) {
             super(itemView);
-            imageView = itemView.findViewById(R.id.imageViewPhoto);
+            imageView = itemView.findViewById(R.id.imgPhoto);
         }
     }
 }
