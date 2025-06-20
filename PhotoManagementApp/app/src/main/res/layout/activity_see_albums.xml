@@ -51,7 +51,7 @@
             android:orientation="horizontal">
 
             <SearchView
-                android:layout_width="260dp"
+                android:layout_width="247dp"
                 android:layout_height="match_parent" />
 
             <Button
