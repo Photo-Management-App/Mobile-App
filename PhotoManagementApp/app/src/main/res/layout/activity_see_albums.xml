@@ -92,36 +92,50 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" >
 
-                    <ImageButton
-                        android:id="@+id/imageButton5"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:srcCompat="@drawable/ic_launcher_background" />
+                    <LinearLayout
+                        android:layout_width="120dp"
+                        android:layout_height="160dp"
+                        android:orientation="vertical"
+                        android:background="@drawable/album_element"
+                        android:gravity="center"
+                        android:layout_margin="8dp">
 
-                    <ImageButton
-                        android:id="@+id/imageButton4"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:srcCompat="@drawable/ic_launcher_background" />
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="2"
+                            android:scaleType="centerCrop" />
+                     <!--       android:src="@drawable/sample_photo" /> -->
 
-                    <ImageButton
-                        android:id="@+id/imageButton2"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:srcCompat="@drawable/ic_launcher_background" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="20"
+                            android:text="Album Title"
+                            android:textColor="@color/black"
+                            android:gravity="top|center_horizontal"/>
+                    </LinearLayout>
+
                 </TableRow>
 
                 <TableRow
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    android:layout_height="match_parent" >
+
+                </TableRow>
 
                 <TableRow
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    android:layout_height="match_parent" >
+
+                </TableRow>
 
                 <TableRow
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    android:layout_height="match_parent" >
+
+
+                </TableRow>
             </TableLayout>
         </ScrollView>
     </LinearLayout>
