@@ -65,9 +65,11 @@ public class SeeAlbums extends AppCompatActivity {
         List<Album> albums = new ArrayList<>();
         List<Integer> photos1 = List.of(R.drawable.donut, R.drawable.dragon);
         List<Integer> photos2 = List.of(R.drawable.screenshot, R.drawable.rect77);
+        List<Integer> photos3 = List.of(R.drawable.karabin, R.drawable.gladiatorzy);
 
         albums.add(new Album("Nature", R.drawable.donut, photos1));
         albums.add(new Album("Art", R.drawable.screenshot, photos2));
+        albums.add(new Album("War", R.drawable.karabin, photos3));
         return albums;
     }
     private final String TOKEN = "YOUR_TOKEN_HERE"; // TODO: Replace with your auth token logic

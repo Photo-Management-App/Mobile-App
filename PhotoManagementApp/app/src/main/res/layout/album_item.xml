@@ -3,7 +3,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="8dp"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@drawable/album_element"
+    android:layout_margin="8dp">
 
     <ImageView
         android:id="@+id/albumCover"
