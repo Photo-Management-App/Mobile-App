@@ -1,33 +1,48 @@
 package com.example.photoflow.data;
 
 import android.content.Context;
+import android.util.Base64;
 
-import com.example.photoflow.data.model.FileUploadItem;
+import com.example.photoflow.data.util.TokenManager;
 
-import java.util.List;
-
+/**
+ * Class that requests authentication and user information from the remote data source and
+ * maintains an in-memory cache of login status and user credentials information.
+ */
 public class FileRepository {
 
-    private static FileRepository instance;
-    private final FileDataSource dataSource;
+    private static volatile FileRepository instance;
 
-    private FileRepository(Context context) {
-        this.dataSource = new FileDataSource(context);
+    private FileDataSource dataSource;
+    private final Context context;
+
+    // private constructor : singleton access
+    private FileRepository(FileDataSource dataSource, Context context) {
+        this.dataSource = dataSource;
+        this.context = context.getApplicationContext(); // Use app context to avoid leaks
     }
 
-    public static FileRepository getInstance(Context context) {
-        if (instance == null) {
-            instance = new FileRepository(context);
+    public static FileRepository getInstance(FileDataSource dataSource , Context context) {
+        if(instance == null){
+            instance = new FileRepository(dataSource, context);
         }
         return instance;
     }
 
-    public void uploadFiles(List<FileUploadItem> files, FileDataSource.FileUploadCallback callback) {
-        dataSource.uploadFile(files, callback);
+    // Async upload with callback
+    public void upload(String base64EncodedFile, String file_name, String title, String description, String coordinates, FileDataSource.FileCallback callback) {
+        dataSource.upload(base64EncodedFile, file_name, title, description, coordinates, new FileDataSource.FileCallback() {
+
+            @Override
+            public void onSuccess(Result<Boolean> result) {
+                callback.onSuccess(result);
+            }
+
+            @Override
+            public void onError(Result.Error error) {
+                callback.onError(error);
+            }
+        });
     }
 
-    public void downloadFiles(List<Long> fileIds, FileDataSource.FileDownloadCallback callback) {
-        dataSource.downloadFiles(fileIds, callback);
-    }
 }
-

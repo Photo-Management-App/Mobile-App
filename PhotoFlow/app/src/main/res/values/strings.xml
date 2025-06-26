@@ -24,4 +24,6 @@
     <string name="invalid_email">Not valid email</string>
     <string name="login_failed">"Login failed"</string>
     <string name="register_failed">"Registration failed"</string>
+    <string name="file_upload_failed">"File upload failed"</string>
+    <string name="file_upload_worked">"File upload worked"</string>
 </resources>

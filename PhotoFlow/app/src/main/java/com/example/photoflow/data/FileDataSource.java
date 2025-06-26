@@ -1,136 +1,103 @@
 package com.example.photoflow.data;
 
 import android.content.Context;
-import android.util.Base64;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
-import com.example.photoflow.data.model.FileDownloadItem;
-import com.example.photoflow.data.model.FileUploadItem;
+import com.example.photoflow.data.model.LoggedInUser;
 import com.example.photoflow.data.util.TokenManager;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.List;
 
+/**
+ * Class that handles authentication w/ login credentials and retrieves user information.
+ */
 public class FileDataSource {
 
     private static final String TAG = "FileDataSource";
-    private static final String BASE_URL = "http://ec2-13-60-9-150.eu-north-1.compute.amazonaws.com:8000";
-    private final Context context;
+    private Context context;
+
+    public interface FileCallback {
+        void onSuccess(Result<Boolean> result);
+        void onError(Result.Error error);
+    }
 
     public FileDataSource(Context context) {
-        this.context = context.getApplicationContext();
+        this.context = context.getApplicationContext(); // Use app context to avoid leaks
     }
 
-    public interface FileUploadCallback {
-        void onSuccess();
-        void onError(Exception e);
-    }
-
-    public void uploadFile(List<FileUploadItem> files, FileUploadCallback callback) {
+    public void upload(String base64EncodedFile, String file_name, String title, String description, String coordinates, FileCallback callback) {
         new Thread(() -> {
             try {
-                String token = TokenManager.loadToken(context);
-                if (token == null) throw new IOException("No token found");
+                Log.d(TAG, "Starting file upload request...");
+
+                URL url = new URL("http://ec2-13-60-9-150.eu-north-1.compute.amazonaws.com:8000/file/upload");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                conn.setDoOutput(true);
 
                 JSONArray filesArray = new JSONArray();
-                for (FileUploadItem item : files) {
-                    JSONObject fileJson = new JSONObject();
-                    fileJson.put("file", Base64.encodeToString(item.data, Base64.NO_WRAP));
-                    fileJson.put("metadata", item.metadata); // Already JSONObject
-                    fileJson.put("tags", new JSONArray(item.tags));
-                    filesArray.put(fileJson);
-                }
+                JSONObject fileObject = new JSONObject();
+                fileObject.put("file", base64EncodedFile);
 
-                JSONObject payload = new JSONObject();
-                payload.put("token", token);    // <-- add token here
-                payload.put("Files", filesArray); // <-- uppercase F
+                JSONObject metadata = new JSONObject();
+                metadata.put("file_name", file_name);
+                metadata.put("title", title);
+                metadata.put("description", description);
+                metadata.put("coordinates", coordinates);
 
-                URL url = new URL(BASE_URL + "/file/upload");
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                // Remove Authorization header if backend expects token only in JSON body
-                // conn.setRequestProperty("Authorization", token);
-                conn.setDoOutput(true);
+                fileObject.put("metadata", metadata);
+                fileObject.put("tags", "tag1,tag2"); // or JSONArray if needed
+
+                filesArray.put(fileObject);
+
+                JSONObject jsonParam = new JSONObject();
+                jsonParam.put("token", TokenManager.loadToken(context));
+                jsonParam.put("Files", filesArray);
+
+
+                Log.d(TAG, "Sending JSON: " + jsonParam.toString());
 
                 OutputStream os = conn.getOutputStream();
-                os.write(payload.toString().getBytes("UTF-8"));
+                os.write(jsonParam.toString().getBytes("UTF-8"));
                 os.close();
 
-                int code = conn.getResponseCode();
-                Log.d(TAG, "Upload response code: " + code);
-                if (code == 200) {
-                    callback.onSuccess();
+                int responseCode = conn.getResponseCode();
+                Log.d(TAG, "HTTP response code: " + responseCode);
+
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    StringBuilder response = new StringBuilder();
+                    String inputLine;
+
+                    while ((inputLine = in.readLine()) != null) {
+                        response.append(inputLine);
+                    }
+                    in.close();
+
+                    // Post result on main thread
+                    new Handler(Looper.getMainLooper()).post(() -> callback.onSuccess(new Result.Success<>(true)));
+
                 } else {
-                    callback.onError(new IOException("Server returned " + code));
+                    Log.e(TAG, "Upload failed. HTTP code: " + responseCode);
+                    new Handler(Looper.getMainLooper()).post(() ->
+                            callback.onError(new Result.Error(new IOException("Upload failed. Code: " + responseCode))));
                 }
 
             } catch (Exception e) {
-                Log.e(TAG, "Upload error", e);
-                callback.onError(e);
-            }
-        }).start();
-    }
-
-
-    public interface FileDownloadCallback {
-        void onSuccess(List<FileDownloadItem> files);
-        void onError(Exception e);
-    }
-
-    public void downloadFiles(List<Long> fileIds, FileDownloadCallback callback) {
-        new Thread(() -> {
-            try {
-                String token = TokenManager.loadToken(context);
-                if (token == null) throw new IOException("No token found");
-
-                JSONObject payload = new JSONObject();
-                payload.put("token", token);
-                JSONArray ids = new JSONArray();
-                for (Long id : fileIds) ids.put(id);
-                payload.put("file_ids", ids);
-
-                URL url = new URL(BASE_URL + "/file/download");
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                conn.setDoOutput(true);
-
-                OutputStream os = conn.getOutputStream();
-                os.write(payload.toString().getBytes("UTF-8"));
-                os.close();
-
-                int code = conn.getResponseCode();
-                if (code != 200) throw new IOException("Failed download: " + code);
-
-                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = in.readLine()) != null) response.append(line);
-                in.close();
-
-                JSONObject res = new JSONObject(response.toString());
-                JSONArray filesJson = res.getJSONArray("files");
-
-                List<FileDownloadItem> fileList = new java.util.ArrayList<>();
-                for (int i = 0; i < filesJson.length(); i++) {
-                    JSONObject f = filesJson.getJSONObject(i);
-                    long id = f.getLong("id");
-                    String name = f.getString("fileName");
-                    byte[] data = Base64.decode(f.getString("file"), Base64.NO_WRAP);
-                    fileList.add(new FileDownloadItem(id, name, data));
-                }
-
-                callback.onSuccess(fileList);
-
-            } catch (Exception e) {
-                Log.e(TAG, "Download error", e);
-                callback.onError(e);
+                Log.e(TAG, "Exception during upload", e);
+                new Handler(Looper.getMainLooper()).post(() ->
+                        callback.onError(new Result.Error(new IOException("Error uploading a file", e))));
             }
         }).start();
     }

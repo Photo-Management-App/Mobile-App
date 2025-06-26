@@ -26,6 +26,8 @@ navigation-fragment = { group = "androidx.navigation", name = "navigation-fragme
 navigation-ui = { group = "androidx.navigation", name = "navigation-ui", version.ref = "navigationUi" }
 annotation = { group = "androidx.annotation", name = "annotation", version.ref = "annotation" }
 google-material = { group = "com.google.android.material", name = "material", version.ref = "materialVersion" }
+volley = { group = "com.android.volley", name = "volley", version = "1.2.1" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
