@@ -40,7 +40,8 @@ public class FileDataSource {
             try {
                 Log.d(TAG, "Starting file upload request...");
 
-                URL url = new URL("http://ec2-13-60-9-150.eu-north-1.compute.amazonaws.com:8000/file/upload");
+                //URL url = new URL("http://ec2-13-60-9-150.eu-north-1.compute.amazonaws.com:8000/file/upload");
+                URL url = new URL("http://192.168.0.145:8000/file/upload");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
@@ -57,12 +58,16 @@ public class FileDataSource {
                 metadata.put("coordinates", coordinates);
 
                 fileObject.put("metadata", metadata);
-                fileObject.put("tags", "tag1,tag2"); // or JSONArray if needed
+                JSONArray tagsArray = new JSONArray();
+                tagsArray.put("tag1");
+                tagsArray.put("tag2");
+                fileObject.put("tags", tagsArray);
 
                 filesArray.put(fileObject);
 
                 JSONObject jsonParam = new JSONObject();
                 jsonParam.put("token", TokenManager.loadToken(context));
+                Log.e("token", TokenManager.loadToken(context));
                 jsonParam.put("Files", filesArray);
 
 

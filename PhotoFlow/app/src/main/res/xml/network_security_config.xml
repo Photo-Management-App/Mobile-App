@@ -3,4 +3,7 @@
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="TODO">ec2-13-60-9-150.eu-north-1.compute.amazonaws.com</domain>
     </domain-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">192.168.0.145</domain>
+    </domain-config>
 </network-security-config>

@@ -27,7 +27,8 @@ public class RegisterDataSource {
             try {
                 Log.d(TAG, "Starting registration request...");
 
-                URL url = new URL("http://ec2-13-60-9-150.eu-north-1.compute.amazonaws.com:8000/register");
+                //URL url = new URL("http://ec2-13-60-9-150.eu-north-1.compute.amazonaws.com:8000/register");
+                URL url = new URL("http://192.168.0.145:8000/register");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");

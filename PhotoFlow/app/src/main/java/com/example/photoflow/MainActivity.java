@@ -38,6 +38,7 @@ import com.example.photoflow.ui.login.LoginActivity;
 import com.google.android.material.navigation.NavigationView;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
@@ -103,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
                             ByteArrayOutputStream baos = new ByteArrayOutputStream();
                             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                             byte[] bytes = baos.toByteArray();
-                            String base64EncodedFile = Base64.encodeToString(bytes, Base64.DEFAULT);
+                            String base64EncodedFile = Base64.encodeToString(bytes, Base64.NO_WRAP);
 
                             Log.e("encoded file", base64EncodedFile);
 

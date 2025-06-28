@@ -39,7 +39,8 @@ public class LoginDataSource {
             try {
                 Log.d(TAG, "Starting login request...");
 
-                URL url = new URL("http://ec2-13-60-9-150.eu-north-1.compute.amazonaws.com:8000/login");
+                //URL url = new URL("http://ec2-13-60-9-150.eu-north-1.compute.amazonaws.com:8000/login");
+                URL url = new URL("http://192.168.0.145:8000/login");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
