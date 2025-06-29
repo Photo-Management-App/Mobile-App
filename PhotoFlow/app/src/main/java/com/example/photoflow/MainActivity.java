@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
@@ -22,6 +23,7 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -38,8 +40,10 @@ import com.example.photoflow.ui.login.LoginActivity;
 import com.google.android.material.navigation.NavigationView;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -54,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
     private String base64EncodedFile;
     private boolean isUploading = false;
     Bitmap bitmap;
+    private Uri photoUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,41 +99,49 @@ public class MainActivity extends AppCompatActivity {
         fileRepository = FileRepository.getInstance(fileDataSource, this);
 
         activityResultLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                        Uri uri = result.getData().getData();
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Uri uri = null;
+
+                    if (result.getData() != null && result.getData().getData() != null) {
+                        // Picked from gallery
+                        uri = result.getData().getData();
+                    } else if (photoUri != null) {
+                        // Captured from camera
+                        uri = photoUri;
+                    }
+
+                    if (uri != null) {
                         try {
                             bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-
                             ByteArrayOutputStream baos = new ByteArrayOutputStream();
                             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                             byte[] bytes = baos.toByteArray();
                             String base64EncodedFile = Base64.encodeToString(bytes, Base64.NO_WRAP);
 
                             Log.e("encoded file", base64EncodedFile);
-
                             isUploading = true;
 
                             fileRepository.upload(
-                                    base64EncodedFile,
-                                    "file_name.jpg",
-                                    "Title",
-                                    "Description",
-                                    "Coordinates",
-                                    new FileDataSource.FileCallback() {
-                                        @Override
-                                        public void onSuccess(Result<Boolean> result) {
-                                            isUploading = false;
-                                            Log.d("MainActivity", "Upload successful");
-                                        }
-
-                                        @Override
-                                        public void onError(Result.Error error) {
-                                            isUploading = false;
-                                            Log.e("MainActivity", "Upload failed: " + error.getError().getMessage());
-                                        }
+                                base64EncodedFile,
+                                "file_name.jpg",
+                                "Title",
+                                "Description",
+                                "Coordinates",
+                                new FileDataSource.FileCallback<Boolean>() {
+                                    @Override
+                                    public void onSuccess(Result<Boolean> result) {
+                                        isUploading = false;
+                                        Log.d("MainActivity", "Upload successful");
                                     }
+
+                                    @Override
+                                    public void onError(Result.Error error) {
+                                        isUploading = false;
+                                        Log.e("MainActivity", "Upload failed: " + error.getError().getMessage());
+                                    }
+                                }
                             );
 
                         } catch (IOException e) {
@@ -138,7 +151,10 @@ public class MainActivity extends AppCompatActivity {
                     } else {
                         Toast.makeText(MainActivity.this, "No image selected", Toast.LENGTH_SHORT).show();
                     }
+                } else {
+                    Toast.makeText(MainActivity.this, "Action cancelled", Toast.LENGTH_SHORT).show();
                 }
+            }
         );
 
 
@@ -164,14 +180,44 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(Intent.ACTION_PICK);
                 intent.setData(MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 activityResultLauncher.launch(intent);
+                closeFabMenu();
             });
 
             fabMenuView.findViewById(R.id.button_album).setOnClickListener(v -> {
                 // Go to profile - placeholder
+                fileRepository.downloadFiles(new FileDataSource.FileCallback<List<Bitmap>>() {
+                    @Override
+                    public void onSuccess(Result<List<Bitmap>> result) {
+                        if (result instanceof Result.Success) {
+                            List<Bitmap> bitmaps = ((Result.Success<List<Bitmap>>) result).getData();
+                            // Do something with bitmaps, e.g. update UI or log
+                            Log.d("MainActivity", "Download successful, " + bitmaps.size() + " images");
+                        } else {
+                            Log.e("MainActivity", "Unexpected result type");
+                        }
+                    }
+
+                    @Override
+                    public void onError(Result.Error error) {
+                        Log.e("MainActivity", "Download failed: " + error.getError().getMessage());
+                    }
+                });
                 closeFabMenu();
             });
 
             fabMenuView.findViewById(R.id.button_camera).setOnClickListener(v -> {
+                try {
+                    File imageFile = File.createTempFile("camera_photo", ".jpg", getExternalFilesDir(Environment.DIRECTORY_PICTURES));
+                    photoUri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", imageFile);
+
+                    Intent iCamera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    iCamera.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+                    activityResultLauncher.launch(iCamera);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Toast.makeText(this, "Failed to create image file", Toast.LENGTH_SHORT).show();
+                }
+
                 closeFabMenu();
             });
 

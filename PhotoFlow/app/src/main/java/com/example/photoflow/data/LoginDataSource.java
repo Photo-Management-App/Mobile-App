@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
+import com.example.photoflow.R;
 import com.example.photoflow.data.model.LoggedInUser;
 import com.example.photoflow.data.util.TokenManager;
 
@@ -38,9 +39,7 @@ public class LoginDataSource {
         new Thread(() -> {
             try {
                 Log.d(TAG, "Starting login request...");
-
-                //URL url = new URL("http://ec2-13-60-9-150.eu-north-1.compute.amazonaws.com:8000/login");
-                URL url = new URL("http://192.168.0.145:8000/login");
+                URL url = new URL(context.getString(R.string.base_url) + "/login");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");

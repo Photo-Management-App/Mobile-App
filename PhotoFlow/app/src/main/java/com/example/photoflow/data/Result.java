@@ -8,7 +8,7 @@ public class Result<T> {
     private Result() {}
 
     // Success sub-class
-    public final static class Success<T> extends Result {
+    public final static class Success<T> extends Result<T> {
         private T data;
 
         public Success(T data) {
@@ -21,7 +21,7 @@ public class Result<T> {
     }
 
     // Error sub-class
-    public final static class Error extends Result {
+    public final static class Error<T> extends Result<T> {
         private Exception error;
 
         public Error(Exception error) {

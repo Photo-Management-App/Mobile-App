@@ -1,9 +1,12 @@
 package com.example.photoflow.data;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.util.Base64;
 
 import com.example.photoflow.data.util.TokenManager;
+
+import java.util.List;
 
 /**
  * Class that requests authentication and user information from the remote data source and
@@ -30,11 +33,26 @@ public class FileRepository {
     }
 
     // Async upload with callback
-    public void upload(String base64EncodedFile, String file_name, String title, String description, String coordinates, FileDataSource.FileCallback callback) {
-        dataSource.upload(base64EncodedFile, file_name, title, description, coordinates, new FileDataSource.FileCallback() {
+    public void upload(String base64EncodedFile, String file_name, String title, String description, String coordinates, FileDataSource.FileCallback<Boolean> callback) {
+        dataSource.upload(base64EncodedFile, file_name, title, description, coordinates, new FileDataSource.FileCallback<Boolean>() {
 
             @Override
             public void onSuccess(Result<Boolean> result) {
+                callback.onSuccess(result);
+            }
+
+            @Override
+            public void onError(Result.Error error) {
+                callback.onError(error);
+            }
+        });
+    }
+
+    public void downloadFiles(FileDataSource.FileCallback<List<Bitmap>> callback) {
+        dataSource.downloadFiles(new FileDataSource.FileCallback<List<Bitmap>>() {
+
+            @Override
+            public void onSuccess(Result<List<Bitmap>> result) {
                 callback.onSuccess(result);
             }
 
