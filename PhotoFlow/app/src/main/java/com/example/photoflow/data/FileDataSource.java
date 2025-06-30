@@ -8,6 +8,7 @@ import android.util.Log;
 
 import com.example.photoflow.R;
 import com.example.photoflow.data.model.LoggedInUser;
+import com.example.photoflow.data.model.PhotoItem;
 import com.example.photoflow.data.util.ImageUtils;
 import com.example.photoflow.data.util.TokenManager;
 
@@ -23,9 +24,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
- * Class that handles authentication w/ login credentials and retrieves user information.
+ * Class that handles authentication w/ login credentials and retrieves user
+ * information.
  */
 public class FileDataSource {
 
@@ -37,11 +38,13 @@ public class FileDataSource {
 
     public interface FileCallback<T> {
         void onSuccess(Result<T> result);
+
         void onError(Result.Error error);
     }
 
     public interface FileListCallback {
         void onSuccess(JSONArray fileList);
+
         void onError(Exception error);
     }
 
@@ -50,7 +53,8 @@ public class FileDataSource {
         baseUrl = context.getString(R.string.base_url);
     }
 
-    public void upload(String base64EncodedFile, String file_name, String title, String description, String coordinates, FileCallback<Boolean> callback) {
+    public void upload(String base64EncodedFile, String file_name, String title, String description, String coordinates,
+            FileCallback<Boolean> callback) {
         new Thread(() -> {
             try {
                 Log.d(TAG, "Starting file upload request...");
@@ -84,7 +88,6 @@ public class FileDataSource {
                 Log.e("token", TokenManager.loadToken(context));
                 jsonParam.put("Files", filesArray);
 
-
                 Log.d(TAG, "Sending JSON: " + jsonParam.toString());
 
                 OutputStream os = conn.getOutputStream();
@@ -109,92 +112,156 @@ public class FileDataSource {
 
                 } else {
                     Log.e(TAG, "Upload failed. HTTP code: " + responseCode);
-                    new Handler(Looper.getMainLooper()).post(() ->
-                            callback.onError(new Result.Error(new IOException("Upload failed. Code: " + responseCode))));
+                    new Handler(Looper.getMainLooper()).post(() -> callback
+                            .onError(new Result.Error(new IOException("Upload failed. Code: " + responseCode))));
                 }
 
             } catch (Exception e) {
                 Log.e(TAG, "Exception during upload", e);
-                new Handler(Looper.getMainLooper()).post(() ->
-                        callback.onError(new Result.Error(new IOException("Error uploading a file", e))));
+                new Handler(Looper.getMainLooper())
+                        .post(() -> callback.onError(new Result.Error(new IOException("Error uploading a file", e))));
             }
         }).start();
     }
 
-    public void downloadFiles(FileCallback<List<Bitmap>> callback) {
-    getFileList(new FileListCallback() {
-        @Override
-        public void onSuccess(JSONArray fileList) {
-            new Thread(() -> {
+    public void getPhotoItems(FileCallback<List<PhotoItem>> callback) {
+        getFileList(new FileListCallback() {
+            @Override
+            public void onSuccess(JSONArray fileList) {
+                List<PhotoItem> photoItems = new ArrayList<>();
+                int totalFiles = fileList.length();
+                if (totalFiles == 0) {
+                    new Handler(Looper.getMainLooper())
+                            .post(() -> callback.onSuccess(new Result.Success<>(photoItems)));
+                    return;
+                }
+
+                final int[] completedCount = { 0 };
+
                 try {
-                    Log.d(TAG, "Starting file download request...");
-                    URL url = new URL(baseUrl + "/file/download");
+                    for (int i = 0; i < totalFiles; i++) {
+                        JSONObject fileWrapper = fileList.getJSONObject(i);
+                        JSONObject fileObject = fileWrapper.getJSONObject("file");
+                        long id = fileObject.getLong("id");
 
-                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestMethod("POST");
-                    conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                    conn.setDoOutput(true);
+                        downloadFiles(id, new FileCallback<Bitmap>() {
+                            @Override
+                            public void onSuccess(Result<Bitmap> result) {
+                                synchronized (photoItems) {
+                                    if (result instanceof Result.Success) {
+                                        Bitmap bitmap = ((Result.Success<Bitmap>) result).getData();
+                                        String title = fileObject.optString("file_name", "");
+                                        String createdAt = fileObject.optString("created_at", "");
+                                        PhotoItem item = new PhotoItem(bitmap, title, createdAt,
+                                                new String[] { "tag1", "tag2" });
+                                        photoItems.add(item);
+                                        Log.d(TAG, "Downloaded file with ID: " + id + ", Title: " + title);
+                                    }
+                                    completedCount[0]++;
+                                    if (completedCount[0] == totalFiles) {
+                                        new Handler(Looper.getMainLooper())
+                                                .post(() -> callback.onSuccess(new Result.Success<>(photoItems)));
+                                    }
+                                }
+                            }
 
-                    JSONObject jsonParam = new JSONObject();
-                    jsonParam.put("token", TokenManager.loadToken(context));
-                    jsonParam.put("file_ids", fileIds);
+                            @Override
+                            public void onError(Result.Error error) {
+                                synchronized (photoItems) {
+                                    Log.e(TAG, "Error downloading file with ID: " + id, error.getError());
+                                    completedCount[0]++;
+                                    if (completedCount[0] == totalFiles) {
+                                        new Handler(Looper.getMainLooper())
+                                                .post(() -> callback.onSuccess(new Result.Success<>(photoItems)));
+                                    }
+                                }
+                            }
+                        });
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Error parsing file list", e);
+                    new Handler(Looper.getMainLooper())
+                            .post(() -> callback
+                                    .onError(new Result.Error(new IOException("Error parsing photo items", e))));
+                }
+            }
 
-                    Log.d(TAG, "Sending JSON: " + jsonParam.toString());
+            @Override
+            public void onError(Exception e) {
+                callback.onError(new Result.Error(new IOException("Failed to fetch file list", e)));
+            }
+        });
+    }
 
-                    OutputStream os = conn.getOutputStream();
-                    os.write(jsonParam.toString().getBytes("UTF-8"));
-                    os.close();
+    private void downloadFiles(long id, FileCallback<Bitmap> callback) {
 
-                    int responseCode = conn.getResponseCode();
-                    Log.d(TAG, "HTTP response code: " + responseCode);
+        new Thread(() -> {
+            try {
+                Log.d(TAG, "Starting file download request...");
+                URL url = new URL(baseUrl + "/file/download");
 
-                    if (responseCode == HttpURLConnection.HTTP_OK) {
-                        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                        StringBuilder response = new StringBuilder();
-                        String inputLine;
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                conn.setDoOutput(true);
 
-                        while ((inputLine = in.readLine()) != null) {
-                            response.append(inputLine);
-                        }
-                        in.close();
-                        Log.d(TAG, "Download response: " + response.toString());
+                JSONObject jsonParam = new JSONObject();
+                jsonParam.put("token", TokenManager.loadToken(context));
+                JSONArray fileIds = new JSONArray();
+                fileIds.put(id); // Add the specific file ID to download
+                jsonParam.put("file_ids", fileIds);
 
-                        JSONArray filesArray = new JSONObject(response.toString()).getJSONArray("files");
-                        List<Bitmap> downloadedBitmaps = new ArrayList<>();
+                Log.d(TAG, "Sending JSON: " + jsonParam.toString());
 
-                        for (int i = 0; i < filesArray.length(); i++) {
-                            JSONObject fileObj = filesArray.getJSONObject(i);
-                            String base64Data = fileObj.getString("file");
+                OutputStream os = conn.getOutputStream();
+                os.write(jsonParam.toString().getBytes("UTF-8"));
+                os.close();
 
-                            Bitmap bitmap = ImageUtils.decodeBase64ToBitmap(base64Data);
-                            downloadedBitmaps.add(bitmap);
-                        }
+                int responseCode = conn.getResponseCode();
+                Log.d(TAG, "HTTP response code: " + responseCode);
 
-                        new Handler(Looper.getMainLooper()).post(() ->
-                                callback.onSuccess(new Result.Success<>(downloadedBitmaps)));
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    StringBuilder response = new StringBuilder();
+                    String inputLine;
+
+                    while ((inputLine = in.readLine()) != null) {
+                        response.append(inputLine);
+                    }
+                    in.close();
+                    Log.d(TAG, "Download response: " + response.toString());
+
+                    JSONObject jsonResponse = new JSONObject(response.toString());
+                    JSONArray filesArray = jsonResponse.getJSONArray("files");
+                    if (filesArray.length() > 0) {
+                        JSONObject fileObject = filesArray.getJSONObject(0);
+                        String base64File = fileObject.getString("file");
+                        Bitmap bitmap = ImageUtils.decodeBase64ToBitmap(base64File);
+                        Log.d(TAG, "File parsed successfully. ID: " + id);
+
+                        new Handler(Looper.getMainLooper())
+                                .post(() -> callback.onSuccess(new Result.Success<>(bitmap)));
                     } else {
-                        Log.e(TAG, "Download failed. HTTP code: " + responseCode);
-                        new Handler(Looper.getMainLooper()).post(() ->
-                                callback.onError(new Result.Error(new IOException("Download failed. Code: " + responseCode))));
+                        new Handler(Looper.getMainLooper())
+                                .post(() -> callback.onError(new Result.Error(new IOException("No file data found."))));
                     }
 
-                } catch (Exception e) {
-                    Log.e(TAG, "Exception during file download", e);
-                    new Handler(Looper.getMainLooper()).post(() ->
-                            callback.onError(new Result.Error(new IOException("Error downloading files", e))));
+                } else {
+                    Log.e(TAG, "Download failed. HTTP code: " + responseCode);
+                    new Handler(Looper.getMainLooper()).post(() -> callback
+                            .onError(new Result.Error(new IOException("Download failed. Code: " + responseCode))));
                 }
-            }).start();
-        }
 
-        @Override
-        public void onError(Exception e) {
-            callback.onError(new Result.Error(new IOException("Failed to fetch file list", e)));
-        }
-    });
-}
+            } catch (Exception e) {
+                Log.e(TAG, "Exception during file download", e);
+                new Handler(Looper.getMainLooper())
+                        .post(() -> callback.onError(new Result.Error(new IOException("Error downloading files", e))));
+            }
+        }).start();
 
+    }
 
-    private void getFileList(FileListCallback callback){
+    private void getFileList(FileListCallback callback) {
         new Thread(() -> {
             try {
                 Log.d(TAG, "Starting file list request...");
@@ -230,10 +297,9 @@ public class FileDataSource {
                     Log.d(TAG, "File list: " + response.toString());
 
                     JSONObject root = new JSONObject(response.toString());
-                    JSONArray filesArray = root.getJSONArray("file"); 
+                    JSONArray filesArray = root.getJSONArray("file");
 
-
-                    for(int i =0; i < filesArray.length(); i++) {
+                    for (int i = 0; i < filesArray.length(); i++) {
                         JSONObject fileWrapper = filesArray.getJSONObject(i);
                         JSONObject fileObject = fileWrapper.getJSONObject("file");
                         long id = fileObject.getLong("id");
@@ -250,8 +316,6 @@ public class FileDataSource {
                     Log.e(TAG, "File list request failed. HTTP code: " + responseCode);
                 }
 
-                
-
             } catch (Exception e) {
                 Log.e(TAG, "Exception during file list request", e);
             }
@@ -259,4 +323,3 @@ public class FileDataSource {
     }
 
 }
-

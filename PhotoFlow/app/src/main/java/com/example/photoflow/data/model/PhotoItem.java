@@ -1,25 +1,24 @@
 package com.example.photoflow.data.model;
 
-public class PhotoItem {
-    public final String base64Image;  // or image URL
-    public final String title;
-    public final String description;
-    public final String coordinates;
-    public final String createdAt;
+import android.graphics.Bitmap;
 
-    public PhotoItem(String base64Image, String title, String description, String coordinates, String createdAt) {
-        this.base64Image = base64Image;
+public class PhotoItem {
+    public final Bitmap bitmap;  // or image URL
+    public final String title;
+    public final String createdAt;
+    public final String[] tags;
+
+    public PhotoItem(Bitmap bitmap, String title, String createdAt, String[] tags) {
+        this.bitmap = bitmap;
         this.title = title;
-        this.description = description;
-        this.coordinates = coordinates;
         this.createdAt = createdAt;
+        this.tags = tags;
 
     }
     
-    public String getBase64() { return base64Image; }
+    public Bitmap getBitmap() { return bitmap; }
     public String getTitle() { return title; }
-    public String getDescription() { return description; }
-    public String getCoordinates() { return coordinates; }
     public String getCreatedAt() { return createdAt; }
+    public String[] getTags() { return tags;}
 }
 

@@ -184,24 +184,7 @@ public class MainActivity extends AppCompatActivity {
             });
 
             fabMenuView.findViewById(R.id.button_album).setOnClickListener(v -> {
-                // Go to profile - placeholder
-                fileRepository.downloadFiles(new FileDataSource.FileCallback<List<Bitmap>>() {
-                    @Override
-                    public void onSuccess(Result<List<Bitmap>> result) {
-                        if (result instanceof Result.Success) {
-                            List<Bitmap> bitmaps = ((Result.Success<List<Bitmap>>) result).getData();
-                            // Do something with bitmaps, e.g. update UI or log
-                            Log.d("MainActivity", "Download successful, " + bitmaps.size() + " images");
-                        } else {
-                            Log.e("MainActivity", "Unexpected result type");
-                        }
-                    }
 
-                    @Override
-                    public void onError(Result.Error error) {
-                        Log.e("MainActivity", "Download failed: " + error.getError().getMessage());
-                    }
-                });
                 closeFabMenu();
             });
 

@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.photoflow.R;
 import com.example.photoflow.data.FileDataSource;
 import com.example.photoflow.data.Result;
+import com.example.photoflow.data.model.PhotoItem;
 import com.example.photoflow.databinding.FragmentGalleryBinding;
 
 import java.io.File;
@@ -44,17 +45,21 @@ public class GalleryFragment extends Fragment {
         // Grid with 2 columns
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
 
-        recyclerView.setAdapter(galleryAdapter);
         progressBar = root.findViewById(R.id.loading);
         // Call this when you're ready to trigger the download:
         FileDataSource fileDataSource = new FileDataSource(requireContext());
         fileRepository = FileRepository.getInstance(fileDataSource, requireContext());
         progressBar.setVisibility(View.VISIBLE);
-        fileRepository.downloadFiles(new FileDataSource.FileCallback<List<Bitmap>>() {
+        fileRepository.getPhotoItems(new FileDataSource.FileCallback<List<PhotoItem>>() {
             @Override
-            public void onSuccess(Result<List<Bitmap>> result) {
+            public void onSuccess(Result<List<PhotoItem>> result) {
                 if (result instanceof Result.Success) {
-                    List<Bitmap> bitmaps = ((Result.Success<List<Bitmap>>) result).getData();
+                    List<PhotoItem> photoItems = ((Result.Success<List<PhotoItem>>) result).getData();
+                    List<Bitmap> bitmaps = new ArrayList<>();
+                    for (PhotoItem item : photoItems) {
+                        Log.e("Gallery", "Adding item: " + item.getTitle());
+                        bitmaps.add(item.getBitmap());
+                    }
                     galleryAdapter = new GalleryAdapter(bitmaps);
                     recyclerView.setAdapter(galleryAdapter);
                 } else {
@@ -64,12 +69,12 @@ public class GalleryFragment extends Fragment {
                 progressBar.setVisibility(View.GONE);
             }
 
-
             @Override
             public void onError(Result.Error error) {
-                Log.e("Gallery", "Failed to download images", error.getError());
+                Log.e("Gallery", "Failed to get images", error.getError());
             }
         });
+        
 
         return root;
     }

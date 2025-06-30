@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Base64;
 
+import com.example.photoflow.data.model.PhotoItem;
 import com.example.photoflow.data.util.TokenManager;
 
 import java.util.List;
@@ -48,11 +49,10 @@ public class FileRepository {
         });
     }
 
-    public void downloadFiles(FileDataSource.FileCallback<List<Bitmap>> callback) {
-        dataSource.downloadFiles(new FileDataSource.FileCallback<List<Bitmap>>() {
-
+    public void getPhotoItems(FileDataSource.FileCallback<List<PhotoItem>> callback) {
+        dataSource.getPhotoItems(new FileDataSource.FileCallback<List<PhotoItem>>() {
             @Override
-            public void onSuccess(Result<List<Bitmap>> result) {
+            public void onSuccess(Result<List<PhotoItem>> result) {
                 callback.onSuccess(result);
             }
 
