@@ -10,8 +10,10 @@ import com.example.photoflow.data.util.TokenManager;
 import java.util.List;
 
 /**
- * Class that requests authentication and user information from the remote data source and
- * maintains an in-memory cache of login status and user credentials information.
+ * Class that requests authentication and user information from the remote data
+ * source and
+ * maintains an in-memory cache of login status and user credentials
+ * information.
  */
 public class FileRepository {
 
@@ -26,19 +28,35 @@ public class FileRepository {
         this.context = context.getApplicationContext(); // Use app context to avoid leaks
     }
 
-    public static FileRepository getInstance(FileDataSource dataSource , Context context) {
-        if(instance == null){
+    public static FileRepository getInstance(FileDataSource dataSource, Context context) {
+        if (instance == null) {
             instance = new FileRepository(dataSource, context);
         }
         return instance;
     }
 
     // Async upload with callback
-    public void upload(String base64EncodedFile, String file_name, String title, String description, String coordinates, String tags, FileDataSource.FileCallback<Boolean> callback) {
-        dataSource.upload(base64EncodedFile, file_name, title, description, coordinates, tags, new FileDataSource.FileCallback<Boolean>() {
+    public void upload(String base64EncodedFile, String file_name, String title, String description, String coordinates,
+            String tags, FileDataSource.FileCallback<Boolean> callback) {
+        dataSource.upload(base64EncodedFile, file_name, title, description, coordinates, tags,
+                new FileDataSource.FileCallback<Boolean>() {
 
+                    @Override
+                    public void onSuccess(Result<Boolean> result) {
+                        callback.onSuccess(result);
+                    }
+
+                    @Override
+                    public void onError(Result.Error error) {
+                        callback.onError(error);
+                    }
+                });
+    }
+
+    public void getPhotoItems(FileDataSource.FileCallback<List<PhotoItem>> callback) {
+        dataSource.getPhotoItems(new FileDataSource.FileCallback<List<PhotoItem>>() {
             @Override
-            public void onSuccess(Result<Boolean> result) {
+            public void onSuccess(Result<List<PhotoItem>> result) {
                 callback.onSuccess(result);
             }
 
@@ -49,10 +67,10 @@ public class FileRepository {
         });
     }
 
-    public void getPhotoItems(FileDataSource.FileCallback<List<PhotoItem>> callback) {
-        dataSource.getPhotoItems(new FileDataSource.FileCallback<List<PhotoItem>>() {
+    public void deleteFile(long fileId, FileDataSource.FileCallback<Boolean> callback) {
+        dataSource.deleteFile(fileId, new FileDataSource.FileCallback<Boolean>() {
             @Override
-            public void onSuccess(Result<List<PhotoItem>> result) {
+            public void onSuccess(Result<Boolean> result) {
                 callback.onSuccess(result);
             }
 

@@ -5,12 +5,14 @@ import java.io.Serializable;
 import android.graphics.Bitmap;
 
 public class PhotoItem implements Serializable{
+    public final long id;
     public final Bitmap bitmap;  // or image URL
     public final String title;
     public final String createdAt;
     public final String[] tags;
 
-    public PhotoItem(Bitmap bitmap, String title, String createdAt, String[] tags) {
+    public PhotoItem(long id, Bitmap bitmap, String title, String createdAt, String[] tags) {
+        this.id = id;
         this.bitmap = bitmap;
         this.title = title;
         this.createdAt = createdAt;
@@ -18,6 +20,7 @@ public class PhotoItem implements Serializable{
 
     }
     
+    public long getId() { return id; }
     public Bitmap getBitmap() { return bitmap; }
     public String getTitle() { return title; }
     public String getCreatedAt() { return createdAt; }

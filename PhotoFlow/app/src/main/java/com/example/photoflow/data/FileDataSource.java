@@ -171,7 +171,7 @@ public class FileDataSource {
                                         String createdAt = fileObject.optString("created_at", "");
                                         Log.e("tags", Arrays.toString(tags));
 
-                                        PhotoItem item = new PhotoItem(bitmap, title, createdAt, tags);
+                                        PhotoItem item = new PhotoItem(id, bitmap, title, createdAt, tags);
                                         photoItems.add(item);
                                         Log.d(TAG, "Downloaded file with ID: " + id + ", Title: " + title);
                                     }
@@ -340,8 +340,63 @@ public class FileDataSource {
         }).start();
     }
 
-    public void deleteFile(){
+    public void deleteFile(long fileId, FileCallback<Boolean> callback) {
+        new Thread(() -> {
+            try {
+                Log.d(TAG, "Starting file delete request...");
+                URL url = new URL(baseUrl + "/file/delete");
 
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                conn.setDoOutput(true);
+
+                JSONObject jsonParam = new JSONObject();
+                jsonParam.put("token", TokenManager.loadToken(context));
+                jsonParam.put("file_id", fileId);
+
+                Log.d(TAG, "Sending JSON: " + jsonParam.toString());
+
+                OutputStream os = conn.getOutputStream();
+                os.write(jsonParam.toString().getBytes("UTF-8"));
+                os.close();
+
+                int responseCode = conn.getResponseCode();
+                Log.d(TAG, "HTTP response code: " + responseCode);
+
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    StringBuilder response = new StringBuilder();
+                    String inputLine;
+
+                    while ((inputLine = in.readLine()) != null) {
+                        response.append(inputLine);
+                    }
+                    in.close();
+
+                    Log.d(TAG, "File deleted successfully: " + response.toString());
+
+                    // Notify success with 'true'
+                    if (callback != null) {
+                        callback.onSuccess(new Result.Success<>(true));
+                    }
+
+                } else {
+                    String errorMsg = "File delete failed. HTTP code: " + responseCode;
+                    Log.e(TAG, errorMsg);
+
+                    if (callback != null) {
+                        callback.onError(new Result.Error(new Exception(errorMsg)));
+                    }
+                }
+
+            } catch (Exception e) {
+                Log.e(TAG, "Exception during file delete", e);
+                if (callback != null) {
+                    callback.onError(new Result.Error(e));
+                }
+            }
+        }).start();
     }
 
 }
