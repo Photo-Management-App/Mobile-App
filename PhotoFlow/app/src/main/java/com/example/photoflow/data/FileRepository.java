@@ -34,8 +34,8 @@ public class FileRepository {
     }
 
     // Async upload with callback
-    public void upload(String base64EncodedFile, String file_name, String title, String description, String coordinates, FileDataSource.FileCallback<Boolean> callback) {
-        dataSource.upload(base64EncodedFile, file_name, title, description, coordinates, new FileDataSource.FileCallback<Boolean>() {
+    public void upload(String base64EncodedFile, String file_name, String title, String description, String coordinates, String tags, FileDataSource.FileCallback<Boolean> callback) {
+        dataSource.upload(base64EncodedFile, file_name, title, description, coordinates, tags, new FileDataSource.FileCallback<Boolean>() {
 
             @Override
             public void onSuccess(Result<Boolean> result) {

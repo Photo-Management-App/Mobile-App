@@ -45,6 +45,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
+import com.example.photoflow.ui.upload.FileUploadActivity;
+
+
 public class MainActivity extends AppCompatActivity {
 
     private AppBarConfiguration mAppBarConfiguration;
@@ -114,35 +117,42 @@ public class MainActivity extends AppCompatActivity {
 
                     if (uri != null) {
                         try {
+                            File cacheDir = getCacheDir();
+                            File tempFile = new File(cacheDir, "temp_image.jpg");
+
+                            FileOutputStream fos = new FileOutputStream(tempFile);
+
                             bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-                            byte[] bytes = baos.toByteArray();
-                            String base64EncodedFile = Base64.encodeToString(bytes, Base64.NO_WRAP);
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+                            fos.flush();
+                            fos.close();
+                            Log.d("MainActivity", "Image saved to cache: " + tempFile.getAbsolutePath());
 
-                            Log.e("encoded file", base64EncodedFile);
                             isUploading = true;
+                            Intent intent = new Intent(MainActivity.this, FileUploadActivity.class);
+                            intent.putExtra("imagePath", tempFile.getAbsolutePath());
+                            startActivity(intent);
 
-                            fileRepository.upload(
-                                base64EncodedFile,
-                                "smth_else.jpg",
-                                "Test Title",
-                                "who knows",
-                                "aaaaaa",
-                                new FileDataSource.FileCallback<Boolean>() {
-                                    @Override
-                                    public void onSuccess(Result<Boolean> result) {
-                                        isUploading = false;
-                                        Log.d("MainActivity", "Upload successful");
-                                    }
+                            // fileRepository.upload(
+                            //     base64EncodedFile,
+                            //     "smth_else.jpg",
+                            //     "Test Title",
+                            //     "who knows",
+                            //     "aaaaaa",
+                            //     new FileDataSource.FileCallback<Boolean>() {
+                            //         @Override
+                            //         public void onSuccess(Result<Boolean> result) {
+                            //             isUploading = false;
+                            //             Log.d("MainActivity", "Upload successful");
+                            //         }
 
-                                    @Override
-                                    public void onError(Result.Error error) {
-                                        isUploading = false;
-                                        Log.e("MainActivity", "Upload failed: " + error.getError().getMessage());
-                                    }
-                                }
-                            );
+                            //         @Override
+                            //         public void onError(Result.Error error) {
+                            //             isUploading = false;
+                            //             Log.e("MainActivity", "Upload failed: " + error.getError().getMessage());
+                            //         }
+                            //     }
+                            // );
 
                         } catch (IOException e) {
                             e.printStackTrace();

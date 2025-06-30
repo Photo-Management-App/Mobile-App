@@ -55,6 +55,7 @@ public class FileDataSource {
     }
 
     public void upload(String base64EncodedFile, String file_name, String title, String description, String coordinates,
+            String tags,
             FileCallback<Boolean> callback) {
         new Thread(() -> {
             try {
@@ -77,9 +78,18 @@ public class FileDataSource {
                 metadata.put("coordinates", coordinates);
 
                 fileObject.put("metadata", metadata);
+
                 JSONArray tagsArray = new JSONArray();
-                tagsArray.put("fun");
-                tagsArray.put("interesting");
+                String[] tagItems = tags.split(",");
+
+                for (String tag : tagItems) {
+                    String trimmedTag = tag.trim();
+                    if (!trimmedTag.isEmpty()) {
+                        tagsArray.put(trimmedTag);
+                    }
+                }
+
+                fileObject.put("tags", tagsArray);
                 fileObject.put("tags", tagsArray);
 
                 filesArray.put(fileObject);
@@ -328,6 +338,10 @@ public class FileDataSource {
                 Log.e(TAG, "Exception during file list request", e);
             }
         }).start();
+    }
+
+    public void deleteFile(){
+
     }
 
 }

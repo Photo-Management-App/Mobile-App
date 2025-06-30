@@ -16,6 +16,12 @@ import androidx.navigation.Navigation;
 import com.example.photoflow.R;
 import com.example.photoflow.data.model.PhotoItem;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+
 public class PhotoDetailFragment extends Fragment {
 
     private PhotoItem photoItem;
@@ -48,7 +54,27 @@ public class PhotoDetailFragment extends Fragment {
                     photoView.setImageBitmap(photoItem.getBitmap());
                 }
                 titleView.setText("Title: " + photoItem.getTitle());
-                createdAtView.setText("Created At: " + photoItem.getCreatedAt());
+                String isoDate = photoItem.getCreatedAt();
+
+                try {
+                    // Parse ISO 8601 string to Date object
+                    SimpleDateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault());
+                    isoFormat.setTimeZone(TimeZone.getTimeZone("UTC")); // UTC timezone because of 'Z'
+
+                    Date date = isoFormat.parse(isoDate);
+
+                    // Format Date to readable format
+                    SimpleDateFormat readableFormat = new SimpleDateFormat("MMM dd, yyyy, h:mm a", Locale.getDefault());
+                    readableFormat.setTimeZone(TimeZone.getDefault()); // Convert to local time zone
+
+                    String readableDate = readableFormat.format(date);
+
+                    createdAtView.setText("Created At: " + readableDate);
+
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                    createdAtView.setText("Created At: " + isoDate); // fallback to original
+                }
                 StringBuilder tagsBuilder = new StringBuilder("Tags: ");
                 if (photoItem.getTags() != null && photoItem.getTags().length > 0) {
                     for (String tag : photoItem.getTags()) {

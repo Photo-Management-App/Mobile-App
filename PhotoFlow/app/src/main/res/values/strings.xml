@@ -13,8 +13,12 @@
     <string name="photo_detail">Photo Details</string>>
     <string name="title_activity_login">LoginActivity</string>
     <string name="prompt_email">Email</string>
-    <string name ="prompt_username">Username</string>
+    <string name="prompt_username">Username</string>
     <string name="prompt_password">Password</string>
+    <string name="prompt_file_name">File Name</string>
+    <string name="prompt_title">Title</string>
+    <string name="prompt_description">Description</string>
+    <string name="action_upload_file">Upload File</string>
     <string name="action_sign_in">Sign in or register</string>
     <string name="action_sign_in_short">Sign in</string>
     <string name="action_forgot_password">Forgot password?</string>
@@ -23,6 +27,9 @@
     <string name="invalid_username">Not a valid username</string>
     <string name="invalid_password">Password must be >5 characters</string>
     <string name="invalid_email">Not valid email</string>
+    <string name="invalid_file_name">Not a valid file name</string>
+    <string name="invalid_title">Not a valid title</string>
+    <string name="invalid_tags">Not valid tags</string>
     <string name="login_failed">"Login failed"</string>
     <string name="register_failed">"Registration failed"</string>
     <string name="file_upload_failed">"File upload failed"</string>
