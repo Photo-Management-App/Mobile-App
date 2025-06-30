@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -77,8 +78,8 @@ public class FileDataSource {
 
                 fileObject.put("metadata", metadata);
                 JSONArray tagsArray = new JSONArray();
-                tagsArray.put("tag1");
-                tagsArray.put("tag2");
+                tagsArray.put("fun");
+                tagsArray.put("interesting");
                 fileObject.put("tags", tagsArray);
 
                 filesArray.put(fileObject);
@@ -158,6 +159,8 @@ public class FileDataSource {
                                         Bitmap bitmap = ((Result.Success<Bitmap>) result).getData();
                                         String title = fileObject.optString("file_name", "");
                                         String createdAt = fileObject.optString("created_at", "");
+                                        Log.e("tags", Arrays.toString(tags));
+
                                         PhotoItem item = new PhotoItem(bitmap, title, createdAt, tags);
                                         photoItems.add(item);
                                         Log.d(TAG, "Downloaded file with ID: " + id + ", Title: " + title);

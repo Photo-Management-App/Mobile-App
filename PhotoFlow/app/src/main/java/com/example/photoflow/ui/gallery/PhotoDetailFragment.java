@@ -59,6 +59,9 @@ public class PhotoDetailFragment extends Fragment {
                 } else {
                     tagsBuilder.append("No tags available");
                 }
+                
+                tagsView.setText(tagsBuilder.toString());
+
             }
         }
        };

@@ -125,10 +125,10 @@ public class MainActivity extends AppCompatActivity {
 
                             fileRepository.upload(
                                 base64EncodedFile,
-                                "file_name.jpg",
-                                "Title",
-                                "Description",
-                                "Coordinates",
+                                "smth_else.jpg",
+                                "Test Title",
+                                "who knows",
+                                "aaaaaa",
                                 new FileDataSource.FileCallback<Boolean>() {
                                     @Override
                                     public void onSuccess(Result<Boolean> result) {
