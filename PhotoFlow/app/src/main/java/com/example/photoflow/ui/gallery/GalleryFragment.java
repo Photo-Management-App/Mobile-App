@@ -14,6 +14,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -37,7 +39,7 @@ public class GalleryFragment extends Fragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
+            ViewGroup container, Bundle savedInstanceState) {
 
         View root = inflater.inflate(R.layout.fragment_gallery, container, false);
         recyclerView = root.findViewById(R.id.galleryRecyclerView);
@@ -55,12 +57,15 @@ public class GalleryFragment extends Fragment {
             public void onSuccess(Result<List<PhotoItem>> result) {
                 if (result instanceof Result.Success) {
                     List<PhotoItem> photoItems = ((Result.Success<List<PhotoItem>>) result).getData();
-                    List<Bitmap> bitmaps = new ArrayList<>();
-                    for (PhotoItem item : photoItems) {
-                        Log.e("Gallery", "Adding item: " + item.getTitle());
-                        bitmaps.add(item.getBitmap());
-                    }
-                    galleryAdapter = new GalleryAdapter(bitmaps);
+                    galleryAdapter = new GalleryAdapter(photoItems, item -> {
+                        Bundle bundle = new Bundle();
+                        bundle.putSerializable("photoItem", item);
+
+                        NavController navController = Navigation.findNavController(requireActivity(),
+                                R.id.nav_host_fragment_content_main);
+                        navController.navigate(R.id.nav_photo_detail, bundle);
+                    });
+
                     recyclerView.setAdapter(galleryAdapter);
                 } else {
                     // Handle unexpected case, e.g., log error or throw
@@ -74,7 +79,6 @@ public class GalleryFragment extends Fragment {
                 Log.e("Gallery", "Failed to get images", error.getError());
             }
         });
-        
 
         return root;
     }

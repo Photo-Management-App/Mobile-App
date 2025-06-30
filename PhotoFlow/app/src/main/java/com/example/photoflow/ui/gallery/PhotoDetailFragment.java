@@ -1,46 +1,66 @@
 package com.example.photoflow.ui.gallery;
 
-import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
 import com.example.photoflow.R;
+import com.example.photoflow.data.model.PhotoItem;
 
-public class PhotoDetailFragment extends AppCompatActivity {
+public class PhotoDetailFragment extends Fragment {
 
-    public static final String EXTRA_TITLE = "extra_title";
-    public static final String EXTRA_DESCRIPTION = "extra_description";
-    public static final String EXTRA_COORDINATES = "extra_coordinates";
-    public static final String EXTRA_CREATED_AT = "extra_created_at";
-    public static final String EXTRA_BITMAP = "extra_bitmap";
+    private PhotoItem photoItem;
 
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_photo_detail);
-
-        ImageView photoView = findViewById(R.id.detailImageView);
-        TextView titleView = findViewById(R.id.detailTitle);
-        TextView descriptionView = findViewById(R.id.detailDescription);
-        TextView coordinatesView = findViewById(R.id.detailCoordinates);
-        TextView createdAtView = findViewById(R.id.detailCreatedAt);
-
-        Bitmap bitmap = getIntent().getParcelableExtra(EXTRA_BITMAP);
-        String title = getIntent().getStringExtra(EXTRA_TITLE);
-        String description = getIntent().getStringExtra(EXTRA_DESCRIPTION);
-        String coordinates = getIntent().getStringExtra(EXTRA_COORDINATES);
-        String createdAt = getIntent().getStringExtra(EXTRA_CREATED_AT);
-
-        photoView.setImageBitmap(bitmap);
-        titleView.setText("Title: " + title);
-        descriptionView.setText("Description: " + description);
-        coordinatesView.setText("Coordinates: " + coordinates);
-        createdAtView.setText("Created At: " + createdAt);
+    public PhotoDetailFragment() {
+        // Required empty public constructor
     }
 
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
+            Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_photo_detail, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        if (getArguments() != null) {
+            photoItem = (PhotoItem) getArguments().getSerializable("photoItem");
+
+            ImageView photoView = view.findViewById(R.id.detailImageView);
+            TextView titleView = view.findViewById(R.id.detailTitle);
+            TextView createdAtView = view.findViewById(R.id.detailCreatedAt);
+            TextView tagsView = view.findViewById(R.id.detailTags);
+
+
+            if (photoItem != null) {
+                if (photoItem.getBitmap() != null) {
+                    photoView.setImageBitmap(photoItem.getBitmap());
+                }
+                titleView.setText("Title: " + photoItem.getTitle());
+                createdAtView.setText("Created At: " + photoItem.getCreatedAt());
+                StringBuilder tagsBuilder = new StringBuilder("Tags: ");
+                if (photoItem.getTags() != null && photoItem.getTags().length > 0) {
+                    for (String tag : photoItem.getTags()) {
+                        tagsBuilder.append(tag).append(", ");
+                    }
+                    // Remove the last comma and space
+                    tagsBuilder.setLength(tagsBuilder.length() - 2);
+                } else {
+                    tagsBuilder.append("No tags available");
+                }
+            }
+        }
+       };
 
 }

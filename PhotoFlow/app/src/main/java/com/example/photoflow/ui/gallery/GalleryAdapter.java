@@ -11,15 +11,22 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.photoflow.R;
+import com.example.photoflow.data.model.PhotoItem;
 
 import java.util.List;
 
 public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.PhotoViewHolder> {
 
-    private final List<Bitmap> photoPaths;
+    public interface OnPhotoClickListener {
+        void onPhotoClick(PhotoItem item);
+    }
 
-    public GalleryAdapter(List<Bitmap> photoPaths) {
-        this.photoPaths = photoPaths;
+    private final List<PhotoItem> photoItems;
+    private final OnPhotoClickListener listener;
+
+    public GalleryAdapter(List<PhotoItem> photoItems, OnPhotoClickListener listener) {
+        this.photoItems = photoItems;
+        this.listener = listener;
     }
 
     @NonNull
@@ -31,13 +38,20 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.PhotoVie
 
     @Override
     public void onBindViewHolder(@NonNull PhotoViewHolder holder, int position) {
-        Bitmap bitmap = photoPaths.get(position);
+        PhotoItem item = photoItems.get(position);
+        Bitmap bitmap = item.getBitmap();
+
         holder.photoImageView.setImageBitmap(bitmap);
+        holder.photoImageView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onPhotoClick(item);
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
-        return photoPaths.size();
+        return photoItems.size();
     }
 
     static class PhotoViewHolder extends RecyclerView.ViewHolder {

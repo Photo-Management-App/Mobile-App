@@ -1,8 +1,10 @@
 package com.example.photoflow.data.model;
 
+import java.io.Serializable;
+
 import android.graphics.Bitmap;
 
-public class PhotoItem {
+public class PhotoItem implements Serializable{
     public final Bitmap bitmap;  // or image URL
     public final String title;
     public final String createdAt;

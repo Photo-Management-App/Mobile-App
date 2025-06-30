@@ -142,7 +142,13 @@ public class FileDataSource {
                     for (int i = 0; i < totalFiles; i++) {
                         JSONObject fileWrapper = fileList.getJSONObject(i);
                         JSONObject fileObject = fileWrapper.getJSONObject("file");
+                        JSONArray tagsArray = fileWrapper.getJSONArray("tags");
                         long id = fileObject.getLong("id");
+
+                        String[] tags = new String[tagsArray.length()];
+                        for (int j = 0; j < tagsArray.length(); j++) {
+                            tags[j] = tagsArray.getString(j);
+                        }
 
                         downloadFiles(id, new FileCallback<Bitmap>() {
                             @Override
@@ -152,8 +158,7 @@ public class FileDataSource {
                                         Bitmap bitmap = ((Result.Success<Bitmap>) result).getData();
                                         String title = fileObject.optString("file_name", "");
                                         String createdAt = fileObject.optString("created_at", "");
-                                        PhotoItem item = new PhotoItem(bitmap, title, createdAt,
-                                                new String[] { "tag1", "tag2" });
+                                        PhotoItem item = new PhotoItem(bitmap, title, createdAt, tags);
                                         photoItems.add(item);
                                         Log.d(TAG, "Downloaded file with ID: " + id + ", Title: " + title);
                                     }
