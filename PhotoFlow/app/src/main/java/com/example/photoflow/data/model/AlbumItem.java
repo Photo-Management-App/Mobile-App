@@ -2,17 +2,17 @@ package com.example.photoflow.data.model;
 
 import android.graphics.Bitmap;
 
-public class AlbumItem {
+import java.io.Serializable;
+
+public class AlbumItem implements Serializable {
 
     private final long id;
     private final String title;
-    private final long coverId;
     private final Bitmap coverImage;
 
-    public AlbumItem(long id, String title, long coverId, Bitmap coverImage) {
+    public AlbumItem(long id, String title, Bitmap coverImage) {
         this.id = id;
         this.title = title;
-        this.coverId = coverId;
         this.coverImage = coverImage;
     }
 
@@ -22,10 +22,6 @@ public class AlbumItem {
 
     public String getTitle() {
         return title;
-    }
-
-    public long getCoverId() {
-        return coverId;
     }
 
     public Bitmap getCoverImage() {

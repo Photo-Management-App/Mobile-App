@@ -1,6 +1,9 @@
 package com.example.photoflow.data;
 
+import static com.example.photoflow.data.util.ImageUtils.decodeBase64ToBitmap;
+
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Looper;
 import android.util.Log;
 
@@ -8,6 +11,7 @@ import com.example.photoflow.R;
 import com.example.photoflow.data.model.AlbumItem;
 import com.example.photoflow.data.util.TokenManager;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -16,6 +20,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
 import android.os.Handler;
 
 public class AlbumDataSource {
@@ -27,11 +34,6 @@ public class AlbumDataSource {
     public interface AlbumCallback<T> {
         void onSuccess(Result<T> result);
         void onError(Exception e);
-    }
-
-    public interface FileCallback<T> {
-        void onSuccess(Result<T> result);
-        void onError(Exception e);        
     }
 
     public AlbumDataSource(Context context) {
@@ -91,5 +93,81 @@ public class AlbumDataSource {
             }
         }).start();
     }
+
+    public void getAlbumItems(AlbumCallback<List<AlbumItem>> callback) {
+        new Thread(() -> {
+            try {
+                Log.d(TAG, "Starting album items request...");
+                URL url = new URL(baseUrl + "/album/list");
+
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                conn.setDoOutput(true);
+
+                JSONObject jsonParam = new JSONObject();
+                jsonParam.put("token", TokenManager.loadToken(context));
+                Log.d(TAG, "Sending JSON: " + jsonParam.toString());
+                OutputStream os = conn.getOutputStream();
+                os.write(jsonParam.toString().getBytes("UTF-8"));
+                os.close();
+
+                int responseCode = conn.getResponseCode();
+                Log.d(TAG, "HTTP response code: " + responseCode);
+
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    StringBuilder response = new StringBuilder();
+                    String inputLine;
+
+                    while ((inputLine = in.readLine()) != null) {
+                        response.append(inputLine);
+                    }
+                    in.close();
+
+                    List<AlbumItem> albumItems = new ArrayList<>();
+
+                    Log.d(TAG, "Response body: " + response);
+                    JSONObject json = new JSONObject(response.toString());
+                    JSONArray albumsArray = json.getJSONArray("albums");
+                    JSONArray coversArray = json.getJSONArray("album_cover");
+
+                    for (int i = 0; i < albumsArray.length(); i++) {
+                        JSONObject albumJson = albumsArray.getJSONObject(i);
+                        JSONObject coverJson = coversArray.getJSONObject(i);
+
+                        long id = albumJson.getLong("id");
+                        String title = albumJson.getString("title");
+
+                        Bitmap coverBitmap = null;
+                        if (coverJson.has("file") && !coverJson.isNull("file")) {
+                            coverBitmap = decodeBase64ToBitmap(coverJson.getString("file"));
+                        }
+
+                        AlbumItem albumItem = new AlbumItem(id, title, coverBitmap);
+                        albumItems.add(albumItem);
+                    }
+
+                    // Post success callback on main thread:
+                    new Handler(Looper.getMainLooper()).post(() -> {
+                        callback.onSuccess(new Result.Success<>(albumItems));
+                    });
+
+                } else {
+                    // HTTP error
+                    new Handler(Looper.getMainLooper()).post(() -> {
+                        callback.onError(new IOException("Failed with HTTP code: " + responseCode));
+                    });
+                }
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error getting album items", e);
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    callback.onError(e);
+                });
+            }
+        }).start();
+    }
+
 
 }

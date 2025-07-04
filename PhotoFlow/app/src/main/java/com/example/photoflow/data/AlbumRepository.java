@@ -4,6 +4,8 @@ import android.content.Context;
 
 import com.example.photoflow.data.model.AlbumItem;
 
+import java.util.List;
+
 public class AlbumRepository {
 
     private static volatile AlbumRepository instance;
@@ -37,5 +39,20 @@ public class AlbumRepository {
             }
         });
     }
+
+    public void getAlbumItems(AlbumDataSource.AlbumCallback<List<AlbumItem>> callback) {
+        albumDataSource.getAlbumItems(new AlbumDataSource.AlbumCallback<List<AlbumItem>>() {
+            @Override
+            public void onSuccess(Result<List<AlbumItem>> result) {
+                callback.onSuccess(result);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                callback.onError(e);
+            }
+        });
+    }
+
 
 }
