@@ -23,7 +23,7 @@
 
 
  <EditText
-        android:id="@+id/file_name"
+        android:id="@+id/album_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
@@ -34,36 +34,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView" />
 
-
- <EditText
-     android:id="@+id/description"
-     android:layout_width="0dp"
-     android:layout_height="wrap_content"
-     android:layout_marginTop="20dp"
-     android:hint="@string/prompt_description"
-     android:inputType="textMultiLine"
-     android:gravity="top|start"
-     android:minLines="4"
-     android:scrollbars="vertical"
-     android:overScrollMode="always"
-     app:layout_constraintEnd_toEndOf="parent"
-     app:layout_constraintStart_toStartOf="parent"
-     app:layout_constraintTop_toBottomOf="@+id/file_name" />
-
-    <EditText
-        android:id="@+id/tags"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:hint="Tags (separate with commas)"
-        android:inputType="text"
-        android:selectAllOnFocus="true"
-        app:layout_constraintTop_toBottomOf="@+id/description"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
  <Button
-        android:id="@+id/upload_button"
+        android:id="@+id/save_button"
         android:enabled="false"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -74,11 +46,11 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tags"
+        app:layout_constraintTop_toBottomOf="@+id/album_title"
         app:layout_constraintVertical_bias="0.2" />
 
     <ProgressBar
-        android:id="@+id/loading"
+        android:id="@+id/progress_bar"
         android:visibility="gone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -86,8 +58,8 @@
         android:layout_marginTop="64dp"
         android:layout_marginBottom="64dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/description"
-        app:layout_constraintStart_toStartOf="@+id/description"
+        app:layout_constraintEnd_toEndOf="@+id/save_button"
+        app:layout_constraintStart_toStartOf="@+id/save_button"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.3" />
 

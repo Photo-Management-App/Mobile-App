@@ -7,6 +7,7 @@ public class Result<T> {
     // hide the private constructor to limit subclass types (Success, Error)
     private Result() {}
 
+
     // Success sub-class
     public final static class Success<T> extends Result<T> {
         private T data;

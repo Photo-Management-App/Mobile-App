@@ -18,7 +18,11 @@ import java.net.URL;
 public class RegisterDataSource {
 
     private static final String TAG = "RegisterDataSource";
-    private Context context;
+    private final String baseUrl;
+
+    public RegisterDataSource(String baseUrl) {
+        this.baseUrl = baseUrl;
+    }
 
     public interface RegisterCallback {
         void onSuccess(Result<RegisteredUser> result);
@@ -29,7 +33,7 @@ public class RegisterDataSource {
         new Thread(() -> {
             try {
                 Log.d(TAG, "Starting registration request...");
-                URL url = new URL(context.getString(R.string.base_url) + "/register");
+                URL url = new URL(baseUrl + "/register");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");

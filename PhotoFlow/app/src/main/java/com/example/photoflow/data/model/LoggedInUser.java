@@ -6,7 +6,7 @@ package com.example.photoflow.data.model;
 public class LoggedInUser {
 
     private String userId;
-    private String displayName;
+    private static String displayName;
 
     public LoggedInUser(String userId, String displayName) {
         this.userId = userId;
@@ -17,7 +17,7 @@ public class LoggedInUser {
         return userId;
     }
 
-    public String getDisplayName() {
+    public static String getDisplayName() {
         return displayName;
     }
 }

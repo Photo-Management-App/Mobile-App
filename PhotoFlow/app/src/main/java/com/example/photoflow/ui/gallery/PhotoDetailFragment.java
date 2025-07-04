@@ -45,7 +45,7 @@ public class PhotoDetailFragment extends Fragment {
             photoItem = (PhotoItem) getArguments().getSerializable("photoItem");
 
             ImageView photoView = view.findViewById(R.id.detailImageView);
-            TextView titleView = view.findViewById(R.id.detailTitle);
+            TextView fileNameView = view.findViewById(R.id.detailFileName);
             TextView createdAtView = view.findViewById(R.id.detailCreatedAt);
             TextView tagsView = view.findViewById(R.id.detailTags);
             ImageButton deleteButton = view.findViewById(R.id.deleteButton);
@@ -54,7 +54,7 @@ public class PhotoDetailFragment extends Fragment {
                 if (photoItem.getBitmap() != null) {
                     photoView.setImageBitmap(photoItem.getBitmap());
                 }
-                titleView.setText("Title: " + photoItem.getTitle());
+                fileNameView.setText("Title: " + photoItem.getFileName());
                 createdAtView.setText("Created At: " + photoItem.getCreatedAt());
                 StringBuilder tagsBuilder = new StringBuilder("Tags: ");
                 if (photoItem.getTags() != null && photoItem.getTags().length > 0) {

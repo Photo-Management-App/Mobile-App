@@ -28,4 +28,9 @@
         android:name="com.example.photoflow.ui.gallery.PhotoDetailFragment"
         android:label="@string/photo_detail"
         tools:layout="@layout/fragment_photo_detail" />
+    <fragment
+        android:id="@+id/nav_choose_cover_fragment"
+        android:name="com.example.photoflow.ui.home.ChooseCoverFragment"
+        android:label="@string/choose_cover"
+        tools:layout="@layout/fragment_choose_cover" />
 </navigation>

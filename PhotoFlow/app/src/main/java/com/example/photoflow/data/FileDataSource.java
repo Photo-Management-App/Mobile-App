@@ -54,7 +54,7 @@ public class FileDataSource {
         baseUrl = context.getString(R.string.base_url);
     }
 
-    public void upload(String base64EncodedFile, String file_name, String title, String description, String coordinates,
+    public void upload(String base64EncodedFile, String fileName, String description, String coordinates,
             String tags,
             FileCallback<Boolean> callback) {
         new Thread(() -> {
@@ -72,8 +72,8 @@ public class FileDataSource {
                 fileObject.put("file", base64EncodedFile);
 
                 JSONObject metadata = new JSONObject();
-                metadata.put("file_name", file_name);
-                metadata.put("title", title);
+                metadata.put("title", "file of " + LoggedInUser.getDisplayName());
+                metadata.put("file_name", fileName);
                 metadata.put("description", description);
                 metadata.put("coordinates", coordinates);
 
@@ -254,7 +254,7 @@ public class FileDataSource {
                     if (filesArray.length() > 0) {
                         JSONObject fileObject = filesArray.getJSONObject(0);
                         String base64File = fileObject.getString("file");
-                        Bitmap bitmap = ImageUtils.decodeBase64ToBitmap(base64File);
+                        Bitmap bitmap = ImageUtils.decodeBase64ToBitmapWithRotation(base64File);
                         Log.d(TAG, "File parsed successfully. ID: " + id);
 
                         new Handler(Looper.getMainLooper())

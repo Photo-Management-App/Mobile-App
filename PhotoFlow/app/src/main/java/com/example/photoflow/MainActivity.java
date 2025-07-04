@@ -194,7 +194,8 @@ public class MainActivity extends AppCompatActivity {
             });
 
             fabMenuView.findViewById(R.id.button_album).setOnClickListener(v -> {
-
+                NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+                navController.navigate(R.id.nav_choose_cover_fragment);
                 closeFabMenu();
             });
 

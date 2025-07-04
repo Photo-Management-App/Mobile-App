@@ -86,7 +86,6 @@ public class FileUploadActivity extends AppCompatActivity {
 
         final ImageView imageView = binding.imageView;
         final EditText fileNameEditText = binding.fileName;
-        final EditText titleEditText = binding.title;
         final EditText descriptionEditText = binding.description;
         final EditText tagsEditText = binding.tags;
         final Button uploadButton = binding.uploadButton;
@@ -103,9 +102,6 @@ public class FileUploadActivity extends AppCompatActivity {
                 uploadButton.setEnabled(formState.isDataValid());
                 if (formState.getFileNameError() != null) {
                     fileNameEditText.setError(getString(formState.getFileNameError()));
-                }
-                if (formState.getTitleError() != null) {
-                    titleEditText.setError(getString(formState.getTitleError()));
                 }
                 if( formState.getTagsError() != null) {
                     tagsEditText.setError(getString(formState.getTagsError()));
@@ -137,8 +133,8 @@ public class FileUploadActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                uploadViewModel.uploadDataChanged(fileNameEditText.getText().toString(),
-                        titleEditText.getText().toString(), tagsEditText.getText().toString());
+                uploadViewModel.uploadDataChanged(
+                        fileNameEditText.getText().toString(), tagsEditText.getText().toString());
             }
 
             @Override
@@ -148,7 +144,6 @@ public class FileUploadActivity extends AppCompatActivity {
         };
 
         fileNameEditText.addTextChangedListener(afterTextChangedListener);
-        titleEditText.addTextChangedListener(afterTextChangedListener);
         descriptionEditText.addTextChangedListener(afterTextChangedListener);
         tagsEditText.addTextChangedListener(afterTextChangedListener); 
 
@@ -156,8 +151,8 @@ public class FileUploadActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 loadingProgressBar.setVisibility(View.VISIBLE);
-                uploadViewModel.upload(fileNameEditText.getText().toString(),
-                        titleEditText.getText().toString(),
+                uploadViewModel.upload(
+                        fileNameEditText.getText().toString(),
                         descriptionEditText.getText().toString(), tagsEditText.getText().toString());
             }
         });

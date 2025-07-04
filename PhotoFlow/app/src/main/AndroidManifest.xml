@@ -53,6 +53,11 @@
             android:exported="true"
             android:label="@string/app_name" />
 
+        <activity
+            android:name=".ui.home.AddAlbumActivity"
+            android:exported="true"
+            android:label="@string/app_name" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.example.photoflow.fileprovider"

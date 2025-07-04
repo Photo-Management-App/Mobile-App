@@ -27,7 +27,7 @@ public class RegisterActivity extends AppCompatActivity {
         binding = ActivityRegisterBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        registerViewModel = new ViewModelProvider(this, new RegisterViewModelFactory())
+        registerViewModel = new ViewModelProvider(this, new RegisterViewModelFactory(this))
                 .get(RegisterViewModel.class);
 
         registerViewModel.getRegisterFormState().observe(this, registerFormState -> {

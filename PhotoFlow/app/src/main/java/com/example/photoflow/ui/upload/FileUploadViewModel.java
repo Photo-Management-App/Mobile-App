@@ -9,6 +9,8 @@ import androidx.lifecycle.ViewModel;
 import com.example.photoflow.data.FileDataSource;
 import com.example.photoflow.data.FileRepository;
 import com.example.photoflow.data.Result;
+import com.example.photoflow.R;
+
 
 public class FileUploadViewModel extends ViewModel {
 
@@ -32,9 +34,9 @@ public class FileUploadViewModel extends ViewModel {
         return uploadResult;
     }
 
-    public void upload(String fileName, String title, String description, String tags) {
+    public void upload(String fileName, String description, String tags) {
         isUploading = true;
-        fileRepository.upload(base64EncodedFile, fileName, title, description, "coordinations", tags,
+        fileRepository.upload(base64EncodedFile, fileName, description, "coordinations", tags,
                 new FileDataSource.FileCallback<Boolean>() {
                     @Override
                     public void onSuccess(Result<Boolean> result) {
@@ -52,33 +54,31 @@ public class FileUploadViewModel extends ViewModel {
                 });
     }
 
-    public void uploadDataChanged(String fileName, String title, String tags) {
+    public void uploadDataChanged(String fileName, String tags) {
         if (!isFileNameValid(fileName)) {
             formState.setValue(new FileUploadFormState(
-                    com.example.photoflow.R.string.invalid_file_name,
-                    null,
-                    null));
-        } else if (!isTitleValid(title)) {
-            formState.setValue(new FileUploadFormState(
-                    null,
-                    com.example.photoflow.R.string.invalid_title,
-                    null));
+                    R.string.invalid_file_name, // fileNameError
+                    null,                       // tagsError
+                    false                       // isDataValid
+            ));
         } else if (!areTagsValid(tags)) {
             formState.setValue(new FileUploadFormState(
-                    null,
-                    null,
-                    com.example.photoflow.R.string.invalid_tags));
+                    null,                       // fileNameError
+                    R.string.invalid_tags,      // tagsError
+                    false                       // isDataValid
+            ));
         } else {
-            formState.setValue(new FileUploadFormState(true));
+            formState.setValue(new FileUploadFormState(
+                    null,                       // fileNameError
+                    null,                       // tagsError
+                    true                        // isDataValid
+            ));
         }
     }
 
+
     private boolean isFileNameValid(String fileName) {
         return fileName != null && fileName.trim().length() > 2;
-    }
-
-    private boolean isTitleValid(String title) {
-        return title != null && title.trim().length() > 2;
     }
 
     private boolean areTagsValid(String tags) {

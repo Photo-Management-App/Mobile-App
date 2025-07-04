@@ -11,6 +11,7 @@
     <string name="menu_gallery">Gallery</string>
     <string name="menu_slideshow">Slideshow</string>
     <string name="photo_detail">Photo Details</string>>
+    <string name="choose_cover">Choose Cover</string>
     <string name="title_activity_login">LoginActivity</string>
     <string name="prompt_email">Email</string>
     <string name="prompt_username">Username</string>
@@ -30,6 +31,7 @@
     <string name="invalid_file_name">Not a valid file name</string>
     <string name="invalid_title">Not a valid title</string>
     <string name="invalid_tags">Not valid tags</string>
+    <string name="invalid_album_title">Not a valid album title</string>
     <string name="login_failed">"Login failed"</string>
     <string name="register_failed">"Registration failed"</string>
     <string name="file_upload_failed">"File upload failed"</string>
