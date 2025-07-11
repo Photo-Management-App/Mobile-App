@@ -38,6 +38,7 @@ import com.example.photoflow.data.Result;
 import com.example.photoflow.databinding.ActivityMainBinding;
 import com.example.photoflow.ui.login.LoginActivity;
 import com.google.android.material.navigation.NavigationView;
+import com.example.photoflow.data.model.LoggedInUser;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -81,13 +82,16 @@ public class MainActivity extends AppCompatActivity {
         // Set the username in the nav_header_main TextView
         View headerView = navigationView.getHeaderView(0);
         TextView usernameTextView = headerView.findViewById(R.id.usernameTextView);
+        TextView emailTextView = headerView.findViewById(R.id.mailTextView);
         String displayName = getSharedPreferences("user_prefs", MODE_PRIVATE)
                 .getString("displayName", "Guest");
+        String email = LoggedInUser.getEmail(); 
+        emailTextView.setText(email != null ? email : "No email");
         usernameTextView.setText(displayName);
 
         // Set up navigation
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow)
+                R.id.nav_home, R.id.nav_gallery)
                 .setOpenableLayout(drawer)
                 .build();
 
@@ -133,26 +137,6 @@ public class MainActivity extends AppCompatActivity {
                             intent.putExtra("imagePath", tempFile.getAbsolutePath());
                             startActivity(intent);
 
-                            // fileRepository.upload(
-                            //     base64EncodedFile,
-                            //     "smth_else.jpg",
-                            //     "Test Title",
-                            //     "who knows",
-                            //     "aaaaaa",
-                            //     new FileDataSource.FileCallback<Boolean>() {
-                            //         @Override
-                            //         public void onSuccess(Result<Boolean> result) {
-                            //             isUploading = false;
-                            //             Log.d("MainActivity", "Upload successful");
-                            //         }
-
-                            //         @Override
-                            //         public void onError(Result.Error error) {
-                            //             isUploading = false;
-                            //             Log.e("MainActivity", "Upload failed: " + error.getError().getMessage());
-                            //         }
-                            //     }
-                            // );
 
                         } catch (IOException e) {
                             e.printStackTrace();

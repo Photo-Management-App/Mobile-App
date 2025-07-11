@@ -18,7 +18,9 @@ import com.example.photoflow.data.AlbumDataSource;
 import com.example.photoflow.data.AlbumRepository;
 import com.example.photoflow.data.Result;
 import com.example.photoflow.data.model.AlbumItem;
+import com.example.photoflow.data.model.PhotoItem;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class HomeFragment extends Fragment {
@@ -30,7 +32,7 @@ public class HomeFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_home, container, false);
         recyclerView = root.findViewById(R.id.albumRecyclerView);
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
@@ -45,10 +47,37 @@ public class HomeFragment extends Fragment {
                 if (result instanceof Result.Success) {
                     List<AlbumItem> albumItems = ((Result.Success<List<AlbumItem>>) result).getData();
                     albumAdapter = new AlbumAdapter(albumItems, item -> {
-                        NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
-                        Bundle bundle = new Bundle();
-                        bundle.putSerializable("albumItem", item);
-                        //navController.navigate(R.id.nav_album_detail_fragment, bundle);
+                        progressBar.setVisibility(View.VISIBLE); // optional: show spinner while loading photos
+
+                        albumRepository.getPhotoItems(item.getId(),
+                                new AlbumDataSource.AlbumCallback<List<PhotoItem>>() {
+                                    @Override
+                                    public void onSuccess(Result<List<PhotoItem>> result) {
+                                        if (result instanceof Result.Success) {
+                                            List<PhotoItem> photoItems = ((Result.Success<List<PhotoItem>>) result)
+                                                    .getData();
+
+                                            Bundle bundle = new Bundle();
+                                            bundle.putSerializable("albumItem", item);
+                                            bundle.putSerializable("photoItems", new ArrayList<>(photoItems)); // if
+                                                                                                               // PhotoItem
+                                                                                                               // is
+                                                                                                               // Serializable
+
+                                            NavController navController = Navigation.findNavController(
+                                                    requireActivity(), R.id.nav_host_fragment_content_main);
+                                           // navController.navigate(R.id.nav_album_detail_fragment, bundle);
+                                        }
+                                        progressBar.setVisibility(View.GONE);
+                                    }
+
+                                    @Override
+                                    public void onError(Exception e) {
+                                        Toast.makeText(getContext(), "Failed to load photos for album",
+                                                Toast.LENGTH_SHORT).show();
+                                        progressBar.setVisibility(View.GONE);
+                                    }
+                                });
                     });
                     recyclerView.setAdapter(albumAdapter);
                 }
@@ -61,7 +90,6 @@ public class HomeFragment extends Fragment {
                 progressBar.setVisibility(View.GONE);
             }
         });
-
 
         return root;
     }

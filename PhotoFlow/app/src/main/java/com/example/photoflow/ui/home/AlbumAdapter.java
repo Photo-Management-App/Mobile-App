@@ -11,8 +11,11 @@ import com.example.photoflow.R;
 import com.example.photoflow.data.FileRepository;
 import com.example.photoflow.data.model.AlbumItem;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import java.util.List;
+
+import org.w3c.dom.Text;
 
 public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> {
 
@@ -43,6 +46,8 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> 
         Bitmap bitmap = albumItem.getCoverImage();
 
         holder.albumImageView.setImageBitmap(bitmap);
+        holder.albumTitleTextView.setText(albumItem.getTitle());
+
         holder.albumImageView.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onAlbumClick(albumItem);
@@ -57,10 +62,12 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> 
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView albumImageView;
+        TextView albumTitleTextView;
 
         public ViewHolder(View itemView) {
             super(itemView);
             albumImageView = itemView.findViewById(R.id.albumImageView);
+            albumTitleTextView = itemView.findViewById(R.id.albumTitleTextView);
         }
     }
 

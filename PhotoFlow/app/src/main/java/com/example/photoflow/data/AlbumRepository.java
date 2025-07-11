@@ -3,6 +3,7 @@ package com.example.photoflow.data;
 import android.content.Context;
 
 import com.example.photoflow.data.model.AlbumItem;
+import com.example.photoflow.data.model.PhotoItem;
 
 import java.util.List;
 
@@ -44,6 +45,20 @@ public class AlbumRepository {
         albumDataSource.getAlbumItems(new AlbumDataSource.AlbumCallback<List<AlbumItem>>() {
             @Override
             public void onSuccess(Result<List<AlbumItem>> result) {
+                callback.onSuccess(result);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                callback.onError(e);
+            }
+        });
+    }
+
+    public void getPhotoItems(long albumId, AlbumDataSource.AlbumCallback<List<PhotoItem>> callback) {
+        albumDataSource.getPhotoItems(albumId, new AlbumDataSource.AlbumCallback<List<PhotoItem>>() {
+            @Override
+            public void onSuccess(Result<List<PhotoItem>> result) {
                 callback.onSuccess(result);
             }
 

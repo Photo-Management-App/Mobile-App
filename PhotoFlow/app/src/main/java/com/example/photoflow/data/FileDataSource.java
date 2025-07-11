@@ -211,7 +211,7 @@ public class FileDataSource {
         });
     }
 
-    private void downloadFiles(long id, FileCallback<Bitmap> callback) {
+    public void downloadFiles(long id, FileCallback<Bitmap> callback) {
 
         new Thread(() -> {
             try {

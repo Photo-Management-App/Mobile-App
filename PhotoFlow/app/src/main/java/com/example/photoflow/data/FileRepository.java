@@ -81,4 +81,18 @@ public class FileRepository {
         });
     }
 
+    public void downloadFiles(long id, FileDataSource.FileCallback<Bitmap> callback) {
+        dataSource.downloadFiles(id, new FileDataSource.FileCallback<Bitmap>() {
+            @Override
+            public void onSuccess(Result<Bitmap> result) {
+                callback.onSuccess(result);
+            }
+
+            @Override
+            public void onError(Result.Error error) {
+                callback.onError(error);
+            }
+        });
+    }
+
 }

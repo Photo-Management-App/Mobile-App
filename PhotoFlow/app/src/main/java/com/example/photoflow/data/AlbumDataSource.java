@@ -9,6 +9,7 @@ import android.util.Log;
 
 import com.example.photoflow.R;
 import com.example.photoflow.data.model.AlbumItem;
+import com.example.photoflow.data.model.PhotoItem;
 import com.example.photoflow.data.util.TokenManager;
 
 import org.json.JSONArray;
@@ -30,7 +31,8 @@ public class AlbumDataSource {
     private static final String TAG = "AlbumDataSource";
     private Context context;
     String baseUrl;
-
+    private JSONArray fileIds;
+    private FileRepository fileRepository;
     public interface AlbumCallback<T> {
         void onSuccess(Result<T> result);
         void onError(Exception e);
@@ -168,6 +170,108 @@ public class AlbumDataSource {
             }
         }).start();
     }
+
+    public void addPhotoToAlbum(){
+
+    }
+
+    public void getPhotoItems(long albumId, AlbumCallback<List<PhotoItem>> callback) {
+    new Thread(() -> {
+        try {
+            Log.d(TAG, "Starting photo items request...");
+            URL url = new URL(baseUrl + "/album/getFile");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            conn.setDoOutput(true);
+
+            JSONObject jsonParam = new JSONObject();
+            jsonParam.put("token", TokenManager.loadToken(context));
+            jsonParam.put("album_id", albumId);
+            Log.d(TAG, "Sending JSON: " + jsonParam.toString());
+
+            OutputStream os = conn.getOutputStream();
+            os.write(jsonParam.toString().getBytes("UTF-8"));
+            os.close();
+
+            int responseCode = conn.getResponseCode();
+            Log.d(TAG, "HTTP response code: " + responseCode);
+
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) {
+                    response.append(line);
+                }
+                br.close();
+
+                Log.d(TAG, "Response: " + response.toString());
+                JSONArray jsonArray = new JSONArray(response.toString());
+                List<Long> fileIds = new ArrayList<>();
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    fileIds.add(jsonArray.getLong(i));
+                }
+
+                List<PhotoItem> photoItems = new ArrayList<>();
+                int totalFiles = fileIds.size();
+                if (totalFiles == 0) {
+                    new Handler(Looper.getMainLooper())
+                            .post(() -> callback.onSuccess(new Result.Success<>(photoItems)));
+                    return;
+                }
+
+                final int[] completedCount = {0};
+
+//                for (Long fileId : fileIds) {
+//                    downloadFiles(fileId, new FileCallback<Bitmap>() {
+//                        @Override
+//                        public void onSuccess(Result<Bitmap> result) {
+//                            synchronized (photoItems) {
+//                                if (result instanceof Result.Success) {
+//                                    Bitmap bitmap = ((Result.Success<Bitmap>) result).getData();
+//                                    // You can optionally fetch metadata (like title/createdAt) separately
+//                                    PhotoItem item = new PhotoItem(fileId, bitmap, "File #" + fileId, "", new String[]{});
+//                                    photoItems.add(item);
+//                                    Log.d(TAG, "Downloaded file with ID: " + fileId);
+//                                }
+//                                completedCount[0]++;
+//                                if (completedCount[0] == totalFiles) {
+//                                    new Handler(Looper.getMainLooper())
+//                                            .post(() -> callback.onSuccess(new Result.Success<>(photoItems)));
+//                                }
+//                            }
+//                        }
+//
+//                        @Override
+//                        public void onError(Result.Error error) {
+//                            synchronized (photoItems) {
+//                                Log.e(TAG, "Error downloading file with ID: " + fileId, error.getError());
+//                                completedCount[0]++;
+//                                if (completedCount[0] == totalFiles) {
+//                                    new Handler(Looper.getMainLooper())
+//                                            .post(() -> callback.onSuccess(new Result.Success<>(photoItems)));
+//                                }
+//                            }
+//                        }
+//                    });
+//                }
+
+            } else {
+                Log.e(TAG, "Failed to get photo items, response code: " + responseCode);
+                new Handler(Looper.getMainLooper()).post(() -> callback
+                        .onError(new Result.Error(new IOException("Failed to get photo items. Code: " + responseCode)).getError()));
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error getting photo items", e);
+            new Handler(Looper.getMainLooper())
+                    .post(() -> callback.onError(new Result.Error(new IOException("Error getting photo items", e)).getError()));
+        }
+    }).start();
+}
+
+
 
 
 }
