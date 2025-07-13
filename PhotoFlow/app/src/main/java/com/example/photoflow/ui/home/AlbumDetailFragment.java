@@ -1,6 +1,7 @@
 package com.example.photoflow.ui.home;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +22,6 @@ import com.example.photoflow.ui.gallery.GalleryAdapter;
 
 import java.util.ArrayList;
 
-
 public class AlbumDetailFragment extends Fragment {
 
     private RecyclerView recyclerView;
@@ -39,13 +39,14 @@ public class AlbumDetailFragment extends Fragment {
         progressBar = root.findViewById(R.id.loading);
         emptyView = root.findViewById(R.id.emptyView);
         buttonAddPhoto = root.findViewById(R.id.buttonAddPhoto);
-        
+
         progressBar.setVisibility(View.VISIBLE);
 
         Bundle args = getArguments();
         if (args != null) {
             ArrayList<PhotoItem> photoItems = (ArrayList<PhotoItem>) args.getSerializable("photoItems");
-            AlbumItem album = (AlbumItem) args.getSerializable("albumItem");
+            long albumId = args.getLong("albumId", -1);
+            Log.e("AlbumDetailFragment", "Album ID: " + albumId);
 
             if (photoItems != null && !photoItems.isEmpty()) {
                 galleryAdapter = new GalleryAdapter(photoItems, item -> {
@@ -61,11 +62,22 @@ public class AlbumDetailFragment extends Fragment {
                 emptyView.setVisibility(View.VISIBLE);
                 buttonAddPhoto.setVisibility(View.VISIBLE);
             }
+
+            // Add this block to handle Add Photo navigation
+            buttonAddPhoto.setOnClickListener(v -> {
+                    Bundle bundle = new Bundle();
+                    bundle.putLong("albumId", albumId);
+
+                    NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
+                    navController.navigate(R.id.nav_choose_photo_fragment, bundle); // Ensure nav graph has correct ID
+            });
+
             progressBar.setVisibility(View.GONE);
         }
 
         return root;
     }
-}
 
+    
+}
 

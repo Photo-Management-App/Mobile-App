@@ -65,6 +65,7 @@ public class HomeFragment extends Fragment {
                                             Bundle bundle = new Bundle();
                                             bundle.putSerializable("albumItem", item);
                                             bundle.putSerializable("photoItems", new ArrayList<>(photoItems));
+                                            bundle.putSerializable("albumId", item.getId());
 
                                             NavController navController = Navigation.findNavController(
                                                     requireActivity(), R.id.nav_host_fragment_content_main);

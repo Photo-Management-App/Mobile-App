@@ -77,4 +77,19 @@ public class AlbumRepository {
     }
 
 
+    public void addPhotoToAlbum( long fileId, long albumId, AlbumDataSource.AlbumCallback<Boolean> callback) {
+        albumDataSource.addPhotoToAlbum(fileId, albumId, new AlbumDataSource.AlbumCallback<Boolean>() {
+            @Override
+            public void onSuccess(Result<Boolean> result) {
+                callback.onSuccess(result);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                callback.onError(e);
+            }
+        });
+    }
+
+
 }
