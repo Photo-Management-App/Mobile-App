@@ -16,10 +16,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.photoflow.R;
 import com.example.photoflow.data.AlbumDataSource;
 import com.example.photoflow.data.AlbumRepository;
+import com.example.photoflow.data.FileDataSource;
+import com.example.photoflow.data.FileRepository;
 import com.example.photoflow.data.Result;
 import com.example.photoflow.data.model.AlbumItem;
 import com.example.photoflow.data.model.PhotoItem;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,8 +41,10 @@ public class HomeFragment extends Fragment {
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
         progressBar = root.findViewById(R.id.loading);
         // Initialize the AlbumRepository
-        AlbumDataSource albumDataSource = new AlbumDataSource(requireContext());
-        albumRepository = AlbumRepository.getInstance(albumDataSource, requireContext());
+        FileDataSource fileDataSource = new FileDataSource(requireContext());
+        FileRepository fileRepository = FileRepository.getInstance(fileDataSource, requireContext());
+        AlbumDataSource albumDataSource = new AlbumDataSource(requireContext(), fileRepository);
+        albumRepository = AlbumRepository.getInstance(requireContext());
         progressBar.setVisibility(View.VISIBLE);
         albumRepository.getAlbumItems(new AlbumDataSource.AlbumCallback<List<AlbumItem>>() {
             @Override
@@ -47,7 +52,7 @@ public class HomeFragment extends Fragment {
                 if (result instanceof Result.Success) {
                     List<AlbumItem> albumItems = ((Result.Success<List<AlbumItem>>) result).getData();
                     albumAdapter = new AlbumAdapter(albumItems, item -> {
-                        progressBar.setVisibility(View.VISIBLE); // optional: show spinner while loading photos
+                        progressBar.setVisibility(View.VISIBLE);
 
                         albumRepository.getPhotoItems(item.getId(),
                                 new AlbumDataSource.AlbumCallback<List<PhotoItem>>() {
@@ -59,14 +64,13 @@ public class HomeFragment extends Fragment {
 
                                             Bundle bundle = new Bundle();
                                             bundle.putSerializable("albumItem", item);
-                                            bundle.putSerializable("photoItems", new ArrayList<>(photoItems)); // if
-                                                                                                               // PhotoItem
-                                                                                                               // is
-                                                                                                               // Serializable
+                                            bundle.putSerializable("photoItems", new ArrayList<>(photoItems));
 
                                             NavController navController = Navigation.findNavController(
                                                     requireActivity(), R.id.nav_host_fragment_content_main);
-                                           // navController.navigate(R.id.nav_album_detail_fragment, bundle);
+                                            navController.navigate(R.id.nav_album_detail_fragment, bundle); // this is
+                                                                                                            // now
+                                                                                                            // active
                                         }
                                         progressBar.setVisibility(View.GONE);
                                     }

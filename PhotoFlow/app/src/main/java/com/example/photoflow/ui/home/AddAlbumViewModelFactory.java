@@ -8,6 +8,8 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.photoflow.data.AlbumDataSource;
 import com.example.photoflow.data.AlbumRepository;
+import com.example.photoflow.data.FileDataSource;
+import com.example.photoflow.data.FileRepository;
 
 public class AddAlbumViewModelFactory implements ViewModelProvider.Factory {
 
@@ -22,9 +24,15 @@ public class AddAlbumViewModelFactory implements ViewModelProvider.Factory {
     @SuppressWarnings("unchecked")
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
         if (modelClass.isAssignableFrom(AddAlbumViewModel.class)) {
-            AlbumDataSource dataSource = new AlbumDataSource(context);
-            AlbumRepository repo = AlbumRepository.getInstance(dataSource, context);
-            return (T) new AddAlbumViewModel(repo);
+            // Initialize FileRepository
+            FileDataSource fileDataSource = new FileDataSource(context);
+            FileRepository fileRepository = FileRepository.getInstance(fileDataSource, context);
+
+            // Pass it to AlbumDataSource and AlbumRepository
+            AlbumDataSource albumDataSource = new AlbumDataSource(context, fileRepository);
+            AlbumRepository albumRepository = AlbumRepository.getInstance(context);
+
+            return (T) new AddAlbumViewModel(albumRepository);
         }
         throw new IllegalArgumentException("Unknown ViewModel class");
     }

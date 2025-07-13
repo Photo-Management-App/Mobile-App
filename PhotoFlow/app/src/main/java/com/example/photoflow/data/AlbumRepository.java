@@ -13,19 +13,26 @@ public class AlbumRepository {
 
     private final AlbumDataSource albumDataSource;
     private final Context context;
+    private final FileRepository fileRepository;
 
     // private constructor : singleton access
-    public AlbumRepository(AlbumDataSource albumDataSource, Context context) {
+    public AlbumRepository(AlbumDataSource albumDataSource, Context context, FileRepository fileRepository) {
         this.albumDataSource = albumDataSource;
         this.context = context.getApplicationContext(); // Use app context to avoid leaks
+        this.fileRepository = fileRepository;
     }
 
-    public static AlbumRepository getInstance(AlbumDataSource albumDataSource, Context context) {
+    public static AlbumRepository getInstance(Context context) {
         if (instance == null) {
-            instance = new AlbumRepository(albumDataSource, context);
+            FileDataSource fileDataSource = new FileDataSource(context);
+            FileRepository fileRepo = FileRepository.getInstance(fileDataSource, context);
+            AlbumDataSource albumDS = new AlbumDataSource(context, fileRepo);
+            instance = new AlbumRepository(albumDS, context, fileRepo);
         }
         return instance;
     }
+
+
 
     public void addAlbum(String title, Long coverId, AlbumDataSource.AlbumCallback<Boolean> callback) {
         albumDataSource.addAlbum(title, coverId, new AlbumDataSource.AlbumCallback<Boolean>() {
