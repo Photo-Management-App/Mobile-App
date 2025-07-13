@@ -177,109 +177,104 @@ public class AlbumDataSource {
     }
 
     public void getPhotoItems(long albumId, AlbumCallback<List<PhotoItem>> callback) {
-        new Thread(() -> {
-            try {
-                Log.d(TAG, "Starting photo items request...");
-                URL url = new URL(baseUrl + "/album/getFile");
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                conn.setDoOutput(true);
+    new Thread(() -> {
+        try {
+            Log.d(TAG, "Starting photo items request...");
+            URL url = new URL(baseUrl + "/album/getFile");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            conn.setDoOutput(true);
 
-                JSONObject jsonParam = new JSONObject();
-                jsonParam.put("token", TokenManager.loadToken(context));
-                jsonParam.put("album_id", albumId);
-                Log.d(TAG, "Sending JSON: " + jsonParam.toString());
+            JSONObject jsonParam = new JSONObject();
+            jsonParam.put("token", TokenManager.loadToken(context));
+            jsonParam.put("album_id", albumId);
+            Log.d(TAG, "Sending JSON: " + jsonParam.toString());
 
-                OutputStream os = conn.getOutputStream();
-                os.write(jsonParam.toString().getBytes("UTF-8"));
-                os.close();
+            OutputStream os = conn.getOutputStream();
+            os.write(jsonParam.toString().getBytes("UTF-8"));
+            os.close();
 
-                int responseCode = conn.getResponseCode();
-                Log.d(TAG, "HTTP response code: " + responseCode);
+            int responseCode = conn.getResponseCode();
+            Log.d(TAG, "HTTP response code: " + responseCode);
 
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                    StringBuilder response = new StringBuilder();
-                    String line;
-                    while ((line = br.readLine()) != null) {
-                        response.append(line);
-                    }
-                    br.close();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) {
+                    response.append(line);
+                }
+                br.close();
 
-                    Log.d(TAG, "Response: " + response.toString());
+                Log.d(TAG, "Response: " + response.toString());
 
-                    List<PhotoItem> photoItems = new ArrayList<>();
-
-                    if (response.toString().equals("null") || response.toString().isEmpty()) {
-                        Log.d(TAG, "No file IDs returned from album.");
-                        new Handler(Looper.getMainLooper())
-                                .post(() -> callback.onSuccess(new Result.Success<>(photoItems)));
-                        return;
-                    }
-
-                    JSONArray jsonArray = new JSONArray(response.toString());
-                    if (jsonArray.length() == 0) {
-                        Log.d(TAG, "File ID list is empty.");
-                        new Handler(Looper.getMainLooper())
-                                .post(() -> callback.onSuccess(new Result.Success<>(photoItems)));
-                        return;
-                    }
-
-                    List<Long> fileIds = new ArrayList<>();
-                    for (int i = 0; i < jsonArray.length(); i++) {
-                        fileIds.add(jsonArray.getLong(i));
-                    }
-
-                    int totalFiles = fileIds.size();
-                    final int[] completedCount = {0};
-
-                    for (Long fileId : fileIds) {
-                        fileRepository.downloadFiles(fileId, new FileDataSource.FileCallback<Bitmap>() {
-                            @Override
-                            public void onSuccess(Result<Bitmap> result) {
-                                synchronized (photoItems) {
-                                    if (result instanceof Result.Success) {
-                                        Bitmap bitmap = ((Result.Success<Bitmap>) result).getData();
-                                        PhotoItem item = new PhotoItem(fileId, bitmap, "File #" + fileId, "", new String[]{});
-                                        photoItems.add(item);
-                                        Log.d(TAG, "Downloaded file with ID: " + fileId);
-                                    }
-                                    completedCount[0]++;
-                                    if (completedCount[0] == totalFiles) {
-                                        new Handler(Looper.getMainLooper())
-                                                .post(() -> callback.onSuccess(new Result.Success<>(photoItems)));
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public void onError(Result.Error error) {
-                                synchronized (photoItems) {
-                                    Log.e(TAG, "Error downloading file with ID: " + fileId, error.getError());
-                                    completedCount[0]++;
-                                    if (completedCount[0] == totalFiles) {
-                                        new Handler(Looper.getMainLooper())
-                                                .post(() -> callback.onSuccess(new Result.Success<>(photoItems)));
-                                    }
-                                }
-                            }
-                        });
-                    }
-
-                } else {
-                    Log.e(TAG, "Failed to get photo items, response code: " + responseCode);
-                    new Handler(Looper.getMainLooper()).post(() -> callback
-                            .onError(new Result.Error(new IOException("Failed to get photo items. Code: " + responseCode)).getError()));
+                if (response.toString().equals("null") || response.toString().isEmpty()) {
+                    Log.d(TAG, "No file IDs returned from album.");
+                    new Handler(Looper.getMainLooper())
+                            .post(() -> callback.onSuccess(new Result.Success<>(new ArrayList<>())));
+                    return;
                 }
 
-            } catch (Exception e) {
-                Log.e(TAG, "Error getting photo items", e);
-                new Handler(Looper.getMainLooper())
-                        .post(() -> callback.onError(new Result.Error(new IOException("Error getting photo items", e)).getError()));
+                JSONArray jsonArray = new JSONArray(response.toString());
+                if (jsonArray.length() == 0) {
+                    Log.d(TAG, "File ID list is empty.");
+                    new Handler(Looper.getMainLooper())
+                            .post(() -> callback.onSuccess(new Result.Success<>(new ArrayList<>())));
+                    return;
+                }
+
+                // Extract fileIds from album response
+                List<Long> fileIds = new ArrayList<>();
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    fileIds.add(jsonArray.getLong(i));
+                }
+
+                // Use fileDataSource to get all photo items, then filter by fileIds
+                fileRepository.getPhotoItems(new FileDataSource.FileCallback<List<PhotoItem>>() {
+                    @Override
+                    public void onSuccess(Result<List<PhotoItem>> result) {
+                        if (result instanceof Result.Success) {
+                            List<PhotoItem> allPhotos = ((Result.Success<List<PhotoItem>>) result).getData();
+                            List<PhotoItem> filteredPhotos = new ArrayList<>();
+
+                            for (PhotoItem photo : allPhotos) {
+                                if (fileIds.contains(photo.getId())) {
+                                    filteredPhotos.add(photo);
+                                }
+                            }
+
+                            new Handler(Looper.getMainLooper())
+                                    .post(() -> callback.onSuccess(new Result.Success<>(filteredPhotos)));
+                        } else {
+                            Log.e(TAG, "Unexpected non-success result from fileRepository");
+                            new Handler(Looper.getMainLooper())
+                                    .post(() -> callback.onError(new Result.Error<>(new Exception("Unexpected result type")).getError()));
+                        }
+                    }
+
+                    @Override
+                    public void onError(Result.Error error) {
+                        Log.e(TAG, "Error fetching photo items from fileRepository", error.getError());
+                        new Handler(Looper.getMainLooper()).post(() -> callback.onError(error.getError()));
+                    }
+                });
+
+            } else {
+                Log.e(TAG, "Failed to get photo items, response code: " + responseCode);
+                new Handler(Looper.getMainLooper()).post(() -> callback
+                        .onError(new Result.Error(new IOException("Failed to get photo items. Code: " + responseCode)).getError()));
             }
-        }).start();
-    }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error getting photo items", e);
+            new Handler(Looper.getMainLooper())
+                    .post(() -> callback
+                            .onError(new Result.Error(new IOException("Error getting photo items", e)).getError()));
+        }
+    }).start();
+}
+
 
 
 
