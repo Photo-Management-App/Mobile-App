@@ -99,7 +99,10 @@ public class FileDataSource {
                 Log.e("token", TokenManager.loadToken(context));
                 jsonParam.put("Files", filesArray);
 
+
                 Log.d(TAG, "Sending JSON: " + jsonParam.toString());
+                Log.d(TAG, "Sending JSON (formatted): " + jsonParam.toString(2));
+
 
                 OutputStream os = conn.getOutputStream();
                 os.write(jsonParam.toString().getBytes("UTF-8"));
