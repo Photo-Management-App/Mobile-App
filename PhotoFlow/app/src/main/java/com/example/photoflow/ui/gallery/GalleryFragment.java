@@ -64,7 +64,7 @@ public class GalleryFragment extends Fragment {
                         NavController navController = Navigation.findNavController(requireActivity(),
                                 R.id.nav_host_fragment_content_main);
                         navController.navigate(R.id.nav_photo_detail, bundle);
-                    });
+                    }, false);
 
                     recyclerView.setAdapter(galleryAdapter);
                 } else {

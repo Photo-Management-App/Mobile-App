@@ -86,7 +86,7 @@ public class ChooseCoverFragment extends Fragment {
                                 }
                             }
                         }.execute(item);
-                    });
+                    }, false);
 
 
                     recyclerView.setAdapter(galleryAdapter);

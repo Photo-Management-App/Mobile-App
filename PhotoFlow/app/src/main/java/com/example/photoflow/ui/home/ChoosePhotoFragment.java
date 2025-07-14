@@ -44,7 +44,7 @@ public class ChoosePhotoFragment extends Fragment {
         progressBar = root.findViewById(R.id.loading);
 
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
-        galleryAdapter = new GalleryAdapter(new ArrayList<>(), item -> {});
+        galleryAdapter = new GalleryAdapter(new ArrayList<>(), item -> {}, false);
         recyclerView.setAdapter(galleryAdapter);
 
         Bundle args = getArguments();
@@ -90,7 +90,7 @@ public class ChoosePhotoFragment extends Fragment {
                                 Toast.makeText(getContext(), "Failed to add photo", Toast.LENGTH_SHORT).show();
                             }
                         });
-                    });
+                    }, false);
 
                     recyclerView.setAdapter(galleryAdapter); // set new adapter with click listener
                 } else {

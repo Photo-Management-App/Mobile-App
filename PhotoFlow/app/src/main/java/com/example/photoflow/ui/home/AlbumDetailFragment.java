@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.photoflow.R;
-import com.example.photoflow.data.model.AlbumItem;
 import com.example.photoflow.data.model.PhotoItem;
 import com.example.photoflow.ui.gallery.GalleryAdapter;
 
@@ -29,6 +28,7 @@ public class AlbumDetailFragment extends Fragment {
     private ProgressBar progressBar;
     private View emptyView;
     private Button buttonAddPhoto;
+    private long albumId;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -45,32 +45,34 @@ public class AlbumDetailFragment extends Fragment {
         Bundle args = getArguments();
         if (args != null) {
             ArrayList<PhotoItem> photoItems = (ArrayList<PhotoItem>) args.getSerializable("photoItems");
-            long albumId = args.getLong("albumId", -1);
-            Log.e("AlbumDetailFragment", "Album ID: " + albumId);
+            albumId = args.getLong("albumId", -1);
+            Log.d("AlbumDetailFragment", "Album ID: " + albumId);
 
             if (photoItems != null && !photoItems.isEmpty()) {
+                buttonAddPhoto.setVisibility(View.GONE);
+                emptyView.setVisibility(View.GONE);
+
                 galleryAdapter = new GalleryAdapter(photoItems, item -> {
-                    Bundle bundle = new Bundle();
-                    bundle.putSerializable("photoItem", item);
-                    NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
-                    navController.navigate(R.id.nav_photo_detail, bundle);
-                });
+                    if (item == null) {
+                        // Null means "Add Photo" button clicked
+                        openChoosePhotoFragment();
+                    } else {
+                        Bundle bundle = new Bundle();
+                        bundle.putSerializable("photoItem", item);
+                        NavController navController = Navigation.findNavController(requireActivity(),
+                                R.id.nav_host_fragment_content_main);
+                        navController.navigate(R.id.nav_photo_detail, bundle);
+                    }
+                }, true); // Show "Add Photo" button
 
                 recyclerView.setAdapter(galleryAdapter);
-                emptyView.setVisibility(View.GONE);
             } else {
+                // Empty album, show centered Add Photo button and message
                 emptyView.setVisibility(View.VISIBLE);
                 buttonAddPhoto.setVisibility(View.VISIBLE);
+
+                buttonAddPhoto.setOnClickListener(v -> openChoosePhotoFragment());
             }
-
-            // Add this block to handle Add Photo navigation
-            buttonAddPhoto.setOnClickListener(v -> {
-                    Bundle bundle = new Bundle();
-                    bundle.putLong("albumId", albumId);
-
-                    NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
-                    navController.navigate(R.id.nav_choose_photo_fragment, bundle); // Ensure nav graph has correct ID
-            });
 
             progressBar.setVisibility(View.GONE);
         }
@@ -78,6 +80,12 @@ public class AlbumDetailFragment extends Fragment {
         return root;
     }
 
-    
+    private void openChoosePhotoFragment() {
+        Bundle bundle = new Bundle();
+        bundle.putLong("albumId", albumId);
+        NavController navController = Navigation.findNavController(requireActivity(),
+                R.id.nav_host_fragment_content_main);
+        navController.navigate(R.id.nav_choose_photo_fragment, bundle);
+    }
 }
 
