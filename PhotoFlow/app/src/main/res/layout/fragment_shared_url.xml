@@ -1,0 +1,46 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:padding="16dp">
+
+    <ImageView
+        android:id="@+id/sharedImageView"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:scaleType="centerCrop" />
+
+    <!-- poziomy layout z TextView i ikoną kopiowania -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="24dp">
+
+        <TextView
+            android:id="@+id/urlTextView"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:padding="8dp"
+            android:text="Loading URL..."
+            android:textSize="18sp"
+            android:background="?attr/selectableItemBackground"
+            android:ellipsize="end"/>
+
+        <ImageView
+            android:id="@+id/copyIcon"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/ic_copy"
+            android:contentDescription="Copy URL"
+            android:padding="6dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_marginStart="12dp"/>
+    </LinearLayout>
+</LinearLayout>

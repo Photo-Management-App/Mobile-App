@@ -16,6 +16,12 @@
         android:name="com.example.photoflow.ui.gallery.GalleryFragment"
         android:label="@string/menu_gallery"
         tools:layout="@layout/fragment_gallery" />
+    
+    <fragment
+        android:id="@+id/nav_share"
+        android:name="com.example.photoflow.ui.share.ShareFragment"
+        android:label="@string/menu_share"
+        tools:layout="@layout/fragment_share" />
 
     <fragment
         android:id="@+id/nav_photo_detail"
@@ -37,4 +43,9 @@
         android:name="com.example.photoflow.ui.home.ChoosePhotoFragment"
         android:label="@string/choose_photo"
         tools:layout="@layout/fragment_choose_cover" />
+    <fragment
+        android:id="@+id/nav_shared_url"
+        android:name="com.example.photoflow.ui.share.SharedUrlFragment"
+        android:label="@string/shared_url"
+        tools:layout="@layout/fragment_shared_url" />
 </navigation>

@@ -9,10 +9,11 @@
     <string name="action_logout">Logout</string>
     <string name="menu_home">Home</string>
     <string name="menu_gallery">Gallery</string>
-    <string name="menu_slideshow">Slideshow</string>
+    <string name="menu_share">Share</string>
     <string name="photo_detail">Photo Details</string>>
     <string name="choose_cover">Choose Cover</string>
     <string name="choose_photo">Choose Photo</string>
+    <string name="shared_url">Shared URL</string>
     <string name="title_activity_login">LoginActivity</string>
     <string name="prompt_email">Email</string>
     <string name="prompt_username">Username</string>
@@ -39,5 +40,5 @@
     <string name="file_upload_worked">"File upload worked"</string>
     <string name="fragment_album_detail">"Photos in album"</string>
       <string name="base_url">http://192.168.0.145:8000</string>
-<!--   <string name="base_url">http://ec2-13-60-9-150.eu-north-1.compute.amazonaws.com:8000</string>-->
+<!--   <string name="base_url">http://ec2-13-60-9-150.eu-north-1.comkpute.amazonaws.com:8000</string>-->
 </resources>
