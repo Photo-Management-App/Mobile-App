@@ -20,7 +20,6 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.example.photoflow.data.model.UserSession;
-import com.example.photoflow.ui.settings.SettingsActivity;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import android.location.Location;
@@ -330,8 +329,8 @@ public class MainActivity extends AppCompatActivity {
         }
         if(item.getItemId() == R.id.settings) {
             // Handle settings click
-            Intent intent = new Intent(this, SettingsActivity.class);
-            startActivity(intent);
+            NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+            navController.navigate(R.id.nav_settings_fragment);
             return true;
         }
         return super.onOptionsItemSelected(item);

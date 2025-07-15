@@ -53,5 +53,16 @@
         android:name="com.example.photoflow.ui.share.SharedUrlFragment"
         android:label="@string/shared_url"
         tools:layout="@layout/fragment_shared_url" />
+    <fragment
+        android:id="@+id/nav_choose_picture_fragment"
+        android:name="com.example.photoflow.ui.settings.ChoosePictureFragment"
+        android:label="@string/choose_profile_picture"
+        tools:layout="@layout/fragment_choose_picture" />
+
+    <fragment
+        android:id="@+id/nav_settings_fragment"
+        android:name="com.example.photoflow.ui.settings.SettingsFragment"
+        android:label="@string/settings"
+        tools:layout="@layout/fragment_settings" />
 
 </navigation>

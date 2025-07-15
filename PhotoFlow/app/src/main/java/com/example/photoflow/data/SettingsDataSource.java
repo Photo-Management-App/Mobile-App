@@ -43,7 +43,7 @@ public class SettingsDataSource {
 
                 JSONObject jsonParam = new JSONObject();
                 jsonParam.put("email", UserSession.getUser().getEmail()); // Assuming you have a UserSession to get the email
-                jsonParam.put("profile", photoId);
+                jsonParam.put("profile", String.valueOf(photoId)); // Assuming you have a UserSession to get the profile pic ID
                 jsonParam.put("token", TokenManager.loadToken(context)); // Assuming you have a TokenManager to get the token
 
                 Log.d(TAG, "Sending JSON: " + jsonParam.toString());

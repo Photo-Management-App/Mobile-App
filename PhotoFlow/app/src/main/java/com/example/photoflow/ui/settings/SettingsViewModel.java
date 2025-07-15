@@ -8,6 +8,8 @@ import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import com.example.photoflow.R;
 import com.example.photoflow.data.Result;
@@ -15,7 +17,7 @@ import com.example.photoflow.data.SettingsDataSource;
 import com.example.photoflow.data.SettingsRepository;
 
 public class SettingsViewModel extends ViewModel {
-    
+
     private final SettingsRepository settingsRepository;
     private boolean isUploading;
     private final Context context;
@@ -36,8 +38,12 @@ public class SettingsViewModel extends ViewModel {
         return settingsResult;
     }
 
-    public void onEmailChanged(String email){
-        if(email == null || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()){
+    public void setSettingsResult(SettingsResult result) {
+        settingsResult.setValue(result);
+    }
+
+    public void onEmailChanged(String email) {
+        if (email == null || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             formState.setValue(new SettingFormState(R.string.invalid_email));
         } else {
             formState.setValue(new SettingFormState(true));
@@ -74,11 +80,15 @@ public class SettingsViewModel extends ViewModel {
         }
     }
 
+    private final MutableLiveData<Boolean> navigateToChoosePicture = new MutableLiveData<>();
 
-    public void updateProfilePicture() {
-        // Logic to update profile picture
-        // Assume success for this example
-        settingsResult.setValue(new SettingsResult(true));
+    public LiveData<Boolean> getNavigateToChoosePicture() {
+        return navigateToChoosePicture;
     }
+
+    public void onChoosePictureClicked() {
+        navigateToChoosePicture.setValue(true);
+    }
+
 
 }

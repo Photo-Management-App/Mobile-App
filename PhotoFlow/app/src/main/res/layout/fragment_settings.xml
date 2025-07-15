@@ -75,13 +75,20 @@
                 android:layout_height="wrap_content"
                 android:hint="Enter new email"
                 android:inputType="textEmailAddress"
-                android:layout_marginBottom="12dp" />
+                android:layout_marginBottom="12dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/profile_picture"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <Button
                 android:id="@+id/change_email_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Change email"
+                android:layout_marginBottom="12dp"
                 android:layout_gravity="center_horizontal" />
 
         </LinearLayout>
