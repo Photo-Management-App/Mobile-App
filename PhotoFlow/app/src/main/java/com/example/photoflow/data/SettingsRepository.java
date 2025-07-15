@@ -9,20 +9,20 @@ public class SettingsRepository {
     private SettingsDataSource dataSource;
     private final Context context;
 
-    private SettingsRepository(SettingsDataSource dataSource, Context context) {
-        this.dataSource = dataSource;
+    public SettingsRepository(Context context) {
+        this.dataSource = new SettingsDataSource(context);
         this.context = context.getApplicationContext(); // Use app context to avoid leaks
     }
 
-    public static SettingsRepository getInstance(SettingsDataSource dataSource, Context context) {
+    public static SettingsRepository getInstance(Context context) {
         if (instance == null) {
-            instance = new SettingsRepository(dataSource, context);
+            instance = new SettingsRepository(context);
         }
         return instance;
     }
 
-    public void updateProfilePic(long photoId, SettingsDataSource.SettingsCallback callback) {
-        dataSource.updateProfilePic(photoId, new SettingsDataSource.SettingsCallback() {
+    public void updateProfilePic(long photoId, SettingsDataSource.SettingsCallback<Boolean> callback) {
+        dataSource.updateProfilePic(photoId, new SettingsDataSource.SettingsCallback<Boolean>() {
             @Override
             public void onSuccess(Result<Boolean> result) {
                 // Handle success
@@ -37,8 +37,8 @@ public class SettingsRepository {
         });
     }
 
-    public void updateEmail(String email, SettingsDataSource.SettingsCallback callback) {
-        dataSource.updateEmail(email, new SettingsDataSource.SettingsCallback() {
+    public void updateEmail(String email, SettingsDataSource.SettingsCallback<Boolean> callback) {
+        dataSource.updateEmail(email, new SettingsDataSource.SettingsCallback<Boolean>() {
             @Override
             public void onSuccess(Result<Boolean> result) {
                 // Handle success

@@ -22,8 +22,8 @@ public class SettingsDataSource {
     private static final String TAG = "SettingsDataSource";
     private Context context;
 
-    public interface SettingsCallback {
-        void onSuccess(Result<Boolean> result);
+    public interface SettingsCallback<T> {
+        void onSuccess(Result<T> result);
         void onError(Result.Error error);
     }
 
@@ -83,7 +83,7 @@ public class SettingsDataSource {
 
                     JSONObject jsonParam = new JSONObject();
                     jsonParam.put("email", email);
-                    jsonParam.put("profile", UserSession.getUser().getProfilePicId()); // Assuming you have a UserSession to get the profile pic ID
+                    jsonParam.put("profile", String.valueOf(UserSession.getUser().getProfilePicId())); // Assuming you have a UserSession to get the profile pic ID
                     jsonParam.put("token", TokenManager.loadToken(context)); // Assuming you have a TokenManager to get the token
 
                     Log.d(TAG, "Sending JSON: " + jsonParam.toString());
