@@ -28,15 +28,15 @@
             android:text="Photo Title" />
 
         <TextView
-            android:id="@+id/detailDescription"
+            android:id="@+id/detailCoordinates"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="16sp"
             android:layout_marginTop="8dp"
-            android:text="Description: ..." />
+            android:text="Coordinates: ..." />
 
         <TextView
-            android:id="@+id/detailCoordinates"
+            android:id="@+id/detailDescription"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="16sp"
@@ -69,6 +69,16 @@
             app:tint="@android:color/white"
             android:contentDescription="Delete"
             android:scaleType="centerInside" />
+
+        <Button
+            android:id="@+id/btnSeeLocation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="See where this photo was taken"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="@color/teal_200"
+            android:textColor="@android:color/white" />
 
     </LinearLayout>
 </ScrollView>

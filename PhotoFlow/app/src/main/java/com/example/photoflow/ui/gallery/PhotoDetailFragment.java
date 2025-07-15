@@ -20,6 +20,8 @@ import com.example.photoflow.data.FileDataSource;
 import com.example.photoflow.data.FileRepository;
 import com.example.photoflow.data.Result;
 import com.example.photoflow.data.model.PhotoItem;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 public class PhotoDetailFragment extends Fragment {
 
@@ -32,7 +34,7 @@ public class PhotoDetailFragment extends Fragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
         context = requireContext();
         return inflater.inflate(R.layout.fragment_photo_detail, container, false);
     }
@@ -51,6 +53,7 @@ public class PhotoDetailFragment extends Fragment {
             TextView createdAtView = view.findViewById(R.id.detailCreatedAt);
             TextView tagsView = view.findViewById(R.id.detailTags);
             ImageButton deleteButton = view.findViewById(R.id.deleteButton);
+            Button btnSeeLocation = view.findViewById(R.id.btnSeeLocation);
 
             if (photoItem != null) {
                 if (photoItem.getBitmap() != null) {
@@ -84,7 +87,8 @@ public class PhotoDetailFragment extends Fragment {
                                 Boolean success = ((Result.Success<Boolean>) result).getData();
                                 if (success) {
                                     requireActivity().runOnUiThread(() -> {
-                                        Toast.makeText(context, "Photo deleted successfully", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(context, "Photo deleted successfully", Toast.LENGTH_SHORT)
+                                                .show();
                                         requireActivity().getSupportFragmentManager().popBackStack();
                                     });
                                 } else {
@@ -103,14 +107,27 @@ public class PhotoDetailFragment extends Fragment {
                         @Override
                         public void onError(Result.Error error) {
                             requireActivity().runOnUiThread(() -> {
-                                Toast.makeText(context, "Error deleting file: " + error.getError().getMessage(), Toast.LENGTH_LONG).show();
+                                Toast.makeText(context, "Error deleting file: " + error.getError().getMessage(),
+                                        Toast.LENGTH_LONG).show();
                             });
                         }
                     });
+                });
+
+                btnSeeLocation.setOnClickListener(v -> {
+                    if (photoItem != null && photoItem.getCoordinates() != null) {
+                        // Prepare bundle with coordinates string
+                        Bundle bundle = new Bundle();
+                        bundle.putString("coordinates", photoItem.getCoordinates());
+
+                        // Navigate using Navigation Component
+                        Navigation.findNavController(v).navigate(R.id.nav_photo_location, bundle);
+                    } else {
+                        Toast.makeText(context, "No coordinates available for this photo", Toast.LENGTH_SHORT).show();
+                    }
                 });
 
             }
         }
     }
 }
-
