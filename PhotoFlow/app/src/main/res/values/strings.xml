@@ -10,7 +10,7 @@
     <string name="menu_home">Home</string>
     <string name="menu_gallery">Gallery</string>
     <string name="menu_share">Share</string>
-    <string name="photo_detail">Photo Details</string>>
+    <string name="photo_detail">Photo Details</string>
     <string name="choose_cover">Choose Cover</string>
     <string name="choose_photo">Choose Photo</string>
     <string name="shared_url">Shared URL</string>
@@ -22,6 +22,7 @@
     <string name="prompt_title">Title</string>
     <string name="prompt_description">Description</string>
     <string name="action_upload_file">Upload File</string>
+    <string name="action_save_album">Save Album</string>
     <string name="action_sign_in">Sign in or register</string>
     <string name="action_sign_in_short">Sign in</string>
     <string name="action_forgot_password">Forgot password?</string>
@@ -39,6 +40,6 @@
     <string name="file_upload_failed">"File upload failed"</string>
     <string name="file_upload_worked">"File upload worked"</string>
     <string name="fragment_album_detail">"Photos in album"</string>
-       <!-- <string name="base_url">http://192.168.0.145:8000</string> -->
- <string name="base_url">http://ec2-13-60-9-150.eu-north-1.compute.amazonaws.com:8000</string>
+        <string name="base_url">http://192.168.0.145:8000</string>
+<!-- <string name="base_url">http://ec2-13-60-9-150.eu-north-1.compute.amazonaws.com:8000</string>-->
 </resources>

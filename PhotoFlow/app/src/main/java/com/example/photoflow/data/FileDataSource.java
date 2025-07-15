@@ -9,6 +9,7 @@ import android.util.Log;
 import com.example.photoflow.R;
 import com.example.photoflow.data.model.LoggedInUser;
 import com.example.photoflow.data.model.PhotoItem;
+import com.example.photoflow.data.model.TagItem;
 import com.example.photoflow.data.util.ImageUtils;
 import com.example.photoflow.data.util.TokenManager;
 
@@ -99,10 +100,8 @@ public class FileDataSource {
                 Log.e("token", TokenManager.loadToken(context));
                 jsonParam.put("Files", filesArray);
 
-
                 Log.d(TAG, "Sending JSON: " + jsonParam.toString());
                 Log.d(TAG, "Sending JSON (formatted): " + jsonParam.toString(2));
-
 
                 OutputStream os = conn.getOutputStream();
                 os.write(jsonParam.toString().getBytes("UTF-8"));
@@ -401,5 +400,68 @@ public class FileDataSource {
             }
         }).start();
     }
+
+    public void getTags(FileCallback<List<TagItem>> callback) {
+    new Thread(() -> {
+        try {
+            Log.d(TAG, "Starting tags request...");
+            URL url = new URL(baseUrl + "/file/tags");
+
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            conn.setDoOutput(true);
+
+            JSONObject jsonParam = new JSONObject();
+            jsonParam.put("token", TokenManager.loadToken(context));
+            Log.e("token", TokenManager.loadToken(context));
+
+            OutputStream os = conn.getOutputStream();
+            os.write(jsonParam.toString().getBytes("UTF-8"));
+            os.close();
+
+            int responseCode = conn.getResponseCode();
+            Log.d(TAG, "HTTP response code: " + responseCode);
+
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String inputLine;
+
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+
+                Log.d(TAG, "Tags response: " + response.toString());
+
+                JSONArray tagsArray = new JSONArray(response.toString());
+
+                List<TagItem> tagsList = new ArrayList<>();
+                for (int i = 0; i < tagsArray.length(); i++) {
+                    JSONObject tagObj = tagsArray.getJSONObject(i);
+                    long id = tagObj.getLong("id");
+                    String name = tagObj.getString("name");
+                    tagsList.add(new TagItem(id, name));
+                }
+
+                new Handler(Looper.getMainLooper()).post(() ->
+                        callback.onSuccess(new Result.Success<>(tagsList)));
+
+            } else {
+                Log.e(TAG, "Tags request failed. HTTP code: " + responseCode);
+                new Handler(Looper.getMainLooper()).post(() ->
+                        callback.onError(new Result.Error(
+                                new IOException("Failed to fetch tags. Code: " + responseCode))));
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Exception during tags request", e);
+            new Handler(Looper.getMainLooper()).post(() ->
+                    callback.onError(new Result.Error(new IOException("Error fetching tags", e))));
+        }
+    }).start();
+}
+
 
 }

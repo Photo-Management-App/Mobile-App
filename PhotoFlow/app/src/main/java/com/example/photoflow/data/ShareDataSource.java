@@ -76,7 +76,7 @@ public class ShareDataSource {
                     br.close();
                     Log.d(TAG, "Response: " + response.toString());
                     JSONObject jsonResponse = new JSONObject(response.toString());
-                    String shareUrl = jsonResponse.getString("url");
+                    String shareUrl = baseUrl + "/" + jsonResponse.getString("url");
                     callback.onSuccess(new Result.Success<>(shareUrl));
 
                 } else {

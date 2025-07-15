@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.util.Base64;
 
 import com.example.photoflow.data.model.PhotoItem;
+import com.example.photoflow.data.model.TagItem;
 import com.example.photoflow.data.util.TokenManager;
 
 import java.util.List;
@@ -85,6 +86,20 @@ public class FileRepository {
         dataSource.downloadFiles(id, new FileDataSource.FileCallback<Bitmap>() {
             @Override
             public void onSuccess(Result<Bitmap> result) {
+                callback.onSuccess(result);
+            }
+
+            @Override
+            public void onError(Result.Error error) {
+                callback.onError(error);
+            }
+        });
+    }
+
+    public void getTags(FileDataSource.FileCallback<List<TagItem>> callback) {
+        dataSource.getTags(new FileDataSource.FileCallback<List<TagItem>>() {
+            @Override
+            public void onSuccess(Result<List<TagItem>> result) {
                 callback.onSuccess(result);
             }
 

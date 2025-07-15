@@ -48,4 +48,5 @@
         android:name="com.example.photoflow.ui.share.SharedUrlFragment"
         android:label="@string/shared_url"
         tools:layout="@layout/fragment_shared_url" />
+
 </navigation>

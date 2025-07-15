@@ -8,7 +8,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -23,6 +25,7 @@ import com.example.photoflow.R;
 import com.example.photoflow.data.FileDataSource;
 import com.example.photoflow.data.Result;
 import com.example.photoflow.data.model.PhotoItem;
+import com.example.photoflow.data.model.TagItem;
 import com.example.photoflow.databinding.FragmentGalleryBinding;
 
 import java.io.File;
@@ -36,6 +39,7 @@ public class GalleryFragment extends Fragment {
     private GalleryAdapter galleryAdapter;
     private FileRepository fileRepository;
     private ProgressBar progressBar;
+    private Spinner tagFilterSpinner;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -43,6 +47,7 @@ public class GalleryFragment extends Fragment {
 
         View root = inflater.inflate(R.layout.fragment_gallery, container, false);
         recyclerView = root.findViewById(R.id.galleryRecyclerView);
+        tagFilterSpinner = root.findViewById(R.id.tagFilterSpinner);
 
         // Grid with 2 columns
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
@@ -52,6 +57,39 @@ public class GalleryFragment extends Fragment {
         FileDataSource fileDataSource = new FileDataSource(requireContext());
         fileRepository = FileRepository.getInstance(fileDataSource, requireContext());
         progressBar.setVisibility(View.VISIBLE);
+        fileRepository.getTags(new FileDataSource.FileCallback<List<TagItem>>() {
+            @Override
+            public void onSuccess(Result<List<TagItem>> result) {
+                if (result instanceof Result.Success) {
+                    List<TagItem> tagItems = ((Result.Success<List<TagItem>>) result).getData();
+
+                    // Convert to list of names for Spinner
+                    List<String> tagNames = new ArrayList<>();
+                    tagNames.add("All"); // Optional "All" filter
+
+                    for (TagItem tag : tagItems) {
+                        tagNames.add(tag.getName());
+                    }
+
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                            requireContext(),
+                            android.R.layout.simple_spinner_item,
+                            tagNames);
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    tagFilterSpinner.setAdapter(adapter);
+
+                    // Optionally store the list of TagItems if you want to map back from name to ID
+                    // e.g., this.tagItems = tagItems;
+
+                }
+            }
+
+            @Override
+            public void onError(Result.Error error) {
+                Log.e("Gallery", "Failed to load tags", error.getError());
+            }
+        });
+
         fileRepository.getPhotoItems(new FileDataSource.FileCallback<List<PhotoItem>>() {
             @Override
             public void onSuccess(Result<List<PhotoItem>> result) {
