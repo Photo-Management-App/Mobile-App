@@ -18,6 +18,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+
+import com.example.photoflow.data.model.UserSession;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import android.location.Location;
@@ -54,6 +56,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+import android.widget.ImageView;
+
 import com.example.photoflow.ui.upload.FileUploadActivity;
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -74,6 +78,8 @@ public class MainActivity extends AppCompatActivity {
     Bitmap bitmap;
     private Uri photoUri;
     private String coordinates;
+    Bitmap profileImageBitmap;
+    long photoId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,16 +104,49 @@ public class MainActivity extends AppCompatActivity {
         DrawerLayout drawer = binding.drawerLayout;
         NavigationView navigationView = binding.navView;
 
+        // Initialize FileDataSource
+        FileDataSource fileDataSource = new FileDataSource(this);
+
+        // Initialize FileRepository singleton
+        fileRepository = FileRepository.getInstance(fileDataSource, this);
+
         // Set the username in the nav_header_main TextView
         View headerView = navigationView.getHeaderView(0);
         TextView usernameTextView = headerView.findViewById(R.id.usernameTextView);
         TextView emailTextView = headerView.findViewById(R.id.mailTextView);
+        ImageView profileImageView = headerView.findViewById(R.id.profileImageView);
         String displayName = getSharedPreferences("user_prefs", MODE_PRIVATE)
                 .getString("displayName", "Guest");
         String email = getSharedPreferences("user_prefs", MODE_PRIVATE)
                 .getString("email", null);
         emailTextView.setText(email != null ? email : "No email");
         usernameTextView.setText(displayName);
+        photoId = getSharedPreferences("user_prefs", MODE_PRIVATE)
+                .getLong("profilePicId", -1);
+
+
+        if (photoId != -1) {
+            fileRepository.downloadFiles(photoId,
+                    new FileDataSource.FileCallback<Bitmap>() {
+                        @Override
+                        public void onSuccess(Result<Bitmap> result) {
+                            if (result instanceof Result.Success) {
+                                profileImageBitmap = ((Result.Success<Bitmap>) result).getData();
+                                profileImageView.setImageBitmap(profileImageBitmap);
+                            } else {
+                                Log.e("MainActivity", "Failed to load profile image");
+                            }
+                        }
+
+                        @Override
+                        public void onError(Result.Error error) {
+                            Log.e("MainActivity", "Error loading profile image", error.getError());
+                        }
+                    });
+            profileImageView.setImageBitmap(profileImageBitmap);
+        } else {
+            profileImageView.setImageResource(R.drawable.ic_menu_camera);
+        }
 
         // Set up navigation
         mAppBarConfiguration = new AppBarConfiguration.Builder(
@@ -118,12 +157,6 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
-
-        // Initialize FileDataSource
-        FileDataSource fileDataSource = new FileDataSource(this);
-
-        // Initialize FileRepository singleton
-        fileRepository = FileRepository.getInstance(fileDataSource, this);
 
         activityResultLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),

@@ -73,13 +73,15 @@ public class LoginDataSource {
                     JSONObject json = new JSONObject(response.toString());
                     String token = json.getString("token");
                     String email = json.getString("email");
+                    String profilePicId = json.optString("profile", "-1"); // Optional field
+                    long profilePicIdLong = profilePicId.equals("-1") ? -1 : Long.parseLong(profilePicId);
 
                     Log.d(TAG, "Login successful. Token: " + token + ", Email: " + email);
 
                     // Save token
                     TokenManager.saveToken(context, token);
 
-                    LoggedInUser realUser = new LoggedInUser(username, email);
+                    LoggedInUser realUser = new LoggedInUser(username, email, profilePicIdLong);
 
                     // Post result on main thread
                     new Handler(Looper.getMainLooper()).post(() -> callback.onSuccess(new Result.Success<>(realUser)));

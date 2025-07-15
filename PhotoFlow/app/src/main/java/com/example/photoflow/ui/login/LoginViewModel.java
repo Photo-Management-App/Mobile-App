@@ -40,7 +40,7 @@ public class LoginViewModel extends ViewModel {
 
                 UserSession.setUser(data); // ✅ Store the user
 
-                loginResult.postValue(new LoginResult(new LoggedInUserView(data.getDisplayName(), data.getEmail())));
+                loginResult.postValue(new LoginResult(new LoggedInUserView(data.getDisplayName(), data.getEmail(), data.getProfilePicId())));
             }
 
 

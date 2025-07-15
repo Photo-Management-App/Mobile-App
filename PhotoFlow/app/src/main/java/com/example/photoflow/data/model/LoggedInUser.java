@@ -7,11 +7,13 @@ public class LoggedInUser {
 
     private String displayName;
     private String email;
+    private long profilePicId;
 
-    public LoggedInUser( String displayName, String email) {
+    public LoggedInUser( String displayName, String email, long profilePicId) {
 
         this.displayName = displayName;
         this.email = email;
+        this.profilePicId = profilePicId;
     }
     public String getDisplayName() {
         return displayName;
@@ -19,5 +21,9 @@ public class LoggedInUser {
 
     public String getEmail() {
         return email;
+    }
+
+    public long getProfilePicId() {
+        return profilePicId;
     }
 }

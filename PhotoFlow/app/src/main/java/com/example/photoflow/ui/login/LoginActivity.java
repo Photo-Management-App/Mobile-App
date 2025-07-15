@@ -159,6 +159,10 @@ public class LoginActivity extends AppCompatActivity {
                 .putString("email", model.getEmail())
                 .apply();
         
+        getSharedPreferences("user_prefs", MODE_PRIVATE)
+                .edit()
+                .putLong("profilePicId", model.getProfilePicId())
+                .apply();
 
         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
         startActivity(intent);
