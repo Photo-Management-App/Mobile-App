@@ -402,66 +402,113 @@ public class FileDataSource {
     }
 
     public void getTags(FileCallback<List<TagItem>> callback) {
-    new Thread(() -> {
-        try {
-            Log.d(TAG, "Starting tags request...");
-            URL url = new URL(baseUrl + "/file/tags");
+        new Thread(() -> {
+            try {
+                Log.d(TAG, "Starting tags request...");
+                URL url = new URL(baseUrl + "/file/tags");
 
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-            conn.setDoOutput(true);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                conn.setDoOutput(true);
 
-            JSONObject jsonParam = new JSONObject();
-            jsonParam.put("token", TokenManager.loadToken(context));
-            Log.e("token", TokenManager.loadToken(context));
+                JSONObject jsonParam = new JSONObject();
+                jsonParam.put("token", TokenManager.loadToken(context));
+                Log.e("token", TokenManager.loadToken(context));
 
-            OutputStream os = conn.getOutputStream();
-            os.write(jsonParam.toString().getBytes("UTF-8"));
-            os.close();
+                OutputStream os = conn.getOutputStream();
+                os.write(jsonParam.toString().getBytes("UTF-8"));
+                os.close();
 
-            int responseCode = conn.getResponseCode();
-            Log.d(TAG, "HTTP response code: " + responseCode);
+                int responseCode = conn.getResponseCode();
+                Log.d(TAG, "HTTP response code: " + responseCode);
 
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                StringBuilder response = new StringBuilder();
-                String inputLine;
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    StringBuilder response = new StringBuilder();
+                    String inputLine;
 
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
+                    while ((inputLine = in.readLine()) != null) {
+                        response.append(inputLine);
+                    }
+                    in.close();
+
+                    Log.d(TAG, "Tags response: " + response.toString());
+
+                    JSONArray tagsArray = new JSONArray(response.toString());
+
+                    List<TagItem> tagsList = new ArrayList<>();
+                    for (int i = 0; i < tagsArray.length(); i++) {
+                        JSONObject tagObj = tagsArray.getJSONObject(i);
+                        long id = tagObj.getLong("id");
+                        String name = tagObj.getString("name");
+                        tagsList.add(new TagItem(id, name));
+                    }
+
+                    new Handler(Looper.getMainLooper()).post(() -> callback.onSuccess(new Result.Success<>(tagsList)));
+
+                } else {
+                    Log.e(TAG, "Tags request failed. HTTP code: " + responseCode);
+                    new Handler(Looper.getMainLooper()).post(() -> callback.onError(new Result.Error(
+                            new IOException("Failed to fetch tags. Code: " + responseCode))));
                 }
-                in.close();
 
-                Log.d(TAG, "Tags response: " + response.toString());
-
-                JSONArray tagsArray = new JSONArray(response.toString());
-
-                List<TagItem> tagsList = new ArrayList<>();
-                for (int i = 0; i < tagsArray.length(); i++) {
-                    JSONObject tagObj = tagsArray.getJSONObject(i);
-                    long id = tagObj.getLong("id");
-                    String name = tagObj.getString("name");
-                    tagsList.add(new TagItem(id, name));
-                }
-
-                new Handler(Looper.getMainLooper()).post(() ->
-                        callback.onSuccess(new Result.Success<>(tagsList)));
-
-            } else {
-                Log.e(TAG, "Tags request failed. HTTP code: " + responseCode);
-                new Handler(Looper.getMainLooper()).post(() ->
-                        callback.onError(new Result.Error(
-                                new IOException("Failed to fetch tags. Code: " + responseCode))));
+            } catch (Exception e) {
+                Log.e(TAG, "Exception during tags request", e);
+                new Handler(Looper.getMainLooper())
+                        .post(() -> callback.onError(new Result.Error(new IOException("Error fetching tags", e))));
             }
+        }).start();
+    }
 
-        } catch (Exception e) {
-            Log.e(TAG, "Exception during tags request", e);
-            new Handler(Looper.getMainLooper()).post(() ->
-                    callback.onError(new Result.Error(new IOException("Error fetching tags", e))));
-        }
-    }).start();
-}
+    public void getPhotoItemsByTag(String tagName, FileCallback<List<PhotoItem>> callback) {
+        new Thread(() -> {
+            try {
+                Log.d(TAG, "Fetching all photos to filter by tag: " + tagName);
+
+                getPhotoItems(new FileCallback<List<PhotoItem>>() {
+                    @Override
+                    public void onSuccess(Result<List<PhotoItem>> result) {
+                        if (result instanceof Result.Success) {
+                            List<PhotoItem> allPhotos = ((Result.Success<List<PhotoItem>>) result).getData();
+                            List<PhotoItem> filteredPhotos = new ArrayList<>();
+
+                            for (PhotoItem photo : allPhotos) {
+                                String[] tags = photo.getTags();
+                                if (tags == null)
+                                    continue;
+
+                                for (String tag : tags) {
+                                    if (tagName.equalsIgnoreCase(tag)) {
+                                        filteredPhotos.add(photo);
+                                        break; // Stop after first match
+                                    }
+                                }
+                            }
+
+                            new Handler(Looper.getMainLooper())
+                                    .post(() -> callback.onSuccess(new Result.Success<>(filteredPhotos)));
+                        } else {
+                            Log.e(TAG, "Unexpected non-success result from getPhotoItems");
+                            new Handler(Looper.getMainLooper()).post(() -> callback
+                                    .onError(new Result.Error<>(new Exception("Unexpected result type"))));
+                        }
+                    }
+
+                    @Override
+                    public void onError(Result.Error error) {
+                        Log.e(TAG, "Error fetching photo items", error.getError());
+                        new Handler(Looper.getMainLooper()).post(() -> callback.onError(error));
+                    }
+                });
+
+            } catch (Exception e) {
+                Log.e(TAG, "Exception in getPhotoItemsByTag", e);
+                new Handler(Looper.getMainLooper()).post(() -> callback
+                        .onError(new Result.Error<>(new IOException("Error filtering photo items by tag", e))));
+            }
+        }).start();
+    }
 
 
 }

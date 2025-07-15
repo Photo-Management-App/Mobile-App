@@ -48,25 +48,22 @@ public class GalleryFragment extends Fragment {
         View root = inflater.inflate(R.layout.fragment_gallery, container, false);
         recyclerView = root.findViewById(R.id.galleryRecyclerView);
         tagFilterSpinner = root.findViewById(R.id.tagFilterSpinner);
-
-        // Grid with 2 columns
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
-
         progressBar = root.findViewById(R.id.loading);
-        // Call this when you're ready to trigger the download:
+
         FileDataSource fileDataSource = new FileDataSource(requireContext());
         fileRepository = FileRepository.getInstance(fileDataSource, requireContext());
+
         progressBar.setVisibility(View.VISIBLE);
+
         fileRepository.getTags(new FileDataSource.FileCallback<List<TagItem>>() {
             @Override
             public void onSuccess(Result<List<TagItem>> result) {
                 if (result instanceof Result.Success) {
                     List<TagItem> tagItems = ((Result.Success<List<TagItem>>) result).getData();
 
-                    // Convert to list of names for Spinner
                     List<String> tagNames = new ArrayList<>();
-                    tagNames.add("All"); // Optional "All" filter
-
+                    tagNames.add("All"); // Add default option
                     for (TagItem tag : tagItems) {
                         tagNames.add(tag.getName());
                     }
@@ -78,9 +75,27 @@ public class GalleryFragment extends Fragment {
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     tagFilterSpinner.setAdapter(adapter);
 
-                    // Optionally store the list of TagItems if you want to map back from name to ID
-                    // e.g., this.tagItems = tagItems;
+                    // Load photos initially (All)
+                    loadPhotos(null);
 
+                    // Set tag change listener
+                    tagFilterSpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+                        @Override
+                        public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position,
+                                long id) {
+                            String selectedTag = tagNames.get(position);
+                            if (selectedTag.equals("All")) {
+                                loadPhotos(null);
+                            } else {
+                                loadPhotos(selectedTag);
+                            }
+                        }
+
+                        @Override
+                        public void onNothingSelected(android.widget.AdapterView<?> parent) {
+                            // Optional
+                        }
+                    });
                 }
             }
 
@@ -90,7 +105,13 @@ public class GalleryFragment extends Fragment {
             }
         });
 
-        fileRepository.getPhotoItems(new FileDataSource.FileCallback<List<PhotoItem>>() {
+        return root;
+    }
+
+    private void loadPhotos(String tagName) {
+        progressBar.setVisibility(View.VISIBLE);
+
+        FileDataSource.FileCallback<List<PhotoItem>> callback = new FileDataSource.FileCallback<List<PhotoItem>>() {
             @Override
             public void onSuccess(Result<List<PhotoItem>> result) {
                 if (result instanceof Result.Success) {
@@ -98,15 +119,12 @@ public class GalleryFragment extends Fragment {
                     galleryAdapter = new GalleryAdapter(photoItems, item -> {
                         Bundle bundle = new Bundle();
                         bundle.putSerializable("photoItem", item);
-
                         NavController navController = Navigation.findNavController(requireActivity(),
                                 R.id.nav_host_fragment_content_main);
                         navController.navigate(R.id.nav_photo_detail, bundle);
                     }, false);
-
                     recyclerView.setAdapter(galleryAdapter);
                 } else {
-                    // Handle unexpected case, e.g., log error or throw
                     Log.e("Gallery", "Expected Success but got different result");
                 }
                 progressBar.setVisibility(View.GONE);
@@ -115,10 +133,15 @@ public class GalleryFragment extends Fragment {
             @Override
             public void onError(Result.Error error) {
                 Log.e("Gallery", "Failed to get images", error.getError());
+                progressBar.setVisibility(View.GONE);
             }
-        });
+        };
 
-        return root;
+        if (tagName == null) {
+            fileRepository.getPhotoItems(callback);
+        } else {
+            fileRepository.getPhotoItemsByTag(tagName, callback);
+        }
     }
 
 }

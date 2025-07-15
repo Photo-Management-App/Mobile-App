@@ -110,4 +110,18 @@ public class FileRepository {
         });
     }
 
+    public void getPhotoItemsByTag(String tagName, FileDataSource.FileCallback<List<PhotoItem>> callback) {
+        dataSource.getPhotoItemsByTag(tagName, new FileDataSource.FileCallback<List<PhotoItem>>() {
+            @Override
+            public void onSuccess(Result<List<PhotoItem>> result) {
+                callback.onSuccess(result);
+            }
+
+            @Override
+            public void onError(Result.Error error) {
+                callback.onError(error);
+            }
+        });
+    }
+
 }
