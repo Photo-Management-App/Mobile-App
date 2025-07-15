@@ -28,6 +28,22 @@
             android:text="Photo Title" />
 
         <TextView
+            android:id="@+id/detailDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:layout_marginTop="8dp"
+            android:text="Description: ..." />
+
+        <TextView
+            android:id="@+id/detailCoordinates"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:layout_marginTop="8dp"
+            android:text="Description: ..." />
+
+        <TextView
             android:id="@+id/detailCreatedAt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

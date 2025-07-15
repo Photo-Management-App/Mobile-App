@@ -171,9 +171,11 @@ public class FileDataSource {
                                         Bitmap bitmap = ((Result.Success<Bitmap>) result).getData();
                                         String title = fileObject.optString("file_name", "");
                                         String createdAt = fileObject.optString("created_at", "");
+                                        String description = fileObject.optString("description", "");
+                                        String coordinates = fileObject.optString("coordinates", "");
                                         Log.e("tags", Arrays.toString(tags));
 
-                                        PhotoItem item = new PhotoItem(id, bitmap, title, createdAt, tags);
+                                        PhotoItem item = new PhotoItem(id, bitmap, title, createdAt, description, coordinates, tags);
                                         photoItems.add(item);
                                         Log.d(TAG, "Downloaded file with ID: " + id + ", Title: " + title);
                                     }

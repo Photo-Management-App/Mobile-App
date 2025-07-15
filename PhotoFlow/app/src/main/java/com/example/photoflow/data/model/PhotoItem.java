@@ -14,13 +14,17 @@ public class PhotoItem implements Serializable{
     public final Bitmap bitmap;  // or image URL
     public final String fileName;
     public final String createdAt;
+    public final String description;
+    public final String coordinates;
     public final String[] tags;
 
-    public PhotoItem(long id, Bitmap bitmap, String fileName, String createdAt, String[] tags) {
+    public PhotoItem(long id, Bitmap bitmap, String fileName, String createdAt, String description, String coordinates, String[] tags) {
         this.id = id;
         this.bitmap = bitmap;
         this.fileName = fileName;
         this.createdAt = createdAt;
+        this.description = description;
+        this.coordinates = coordinates;
         this.tags = tags;
 
     }
@@ -28,6 +32,8 @@ public class PhotoItem implements Serializable{
     public long getId() { return id; }
     public Bitmap getBitmap() { return bitmap; }
     public String getFileName() { return fileName; }
+    public String getDescription() { return description; }
+    public String getCoordinates() { return coordinates; }
     public String[] getTags() { return tags;}
 
     public String getCreatedAt() {

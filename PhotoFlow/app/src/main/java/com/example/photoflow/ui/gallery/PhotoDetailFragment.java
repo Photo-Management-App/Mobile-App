@@ -46,6 +46,8 @@ public class PhotoDetailFragment extends Fragment {
 
             ImageView photoView = view.findViewById(R.id.detailImageView);
             TextView fileNameView = view.findViewById(R.id.detailFileName);
+            TextView descriptionView = view.findViewById(R.id.detailDescription);
+            TextView coordinatesView = view.findViewById(R.id.detailCoordinates);
             TextView createdAtView = view.findViewById(R.id.detailCreatedAt);
             TextView tagsView = view.findViewById(R.id.detailTags);
             ImageButton deleteButton = view.findViewById(R.id.deleteButton);
@@ -55,6 +57,8 @@ public class PhotoDetailFragment extends Fragment {
                     photoView.setImageBitmap(photoItem.getBitmap());
                 }
                 fileNameView.setText("Title: " + photoItem.getFileName());
+                descriptionView.setText("Description: " + photoItem.getDescription());
+                coordinatesView.setText("Coordinates: " + photoItem.getCoordinates());
                 createdAtView.setText("Created At: " + photoItem.getCreatedAt());
                 StringBuilder tagsBuilder = new StringBuilder("Tags: ");
                 if (photoItem.getTags() != null && photoItem.getTags().length > 0) {
