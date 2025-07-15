@@ -34,9 +34,9 @@ public class FileUploadViewModel extends ViewModel {
         return uploadResult;
     }
 
-    public void upload(String fileName, String description, String tags) {
+    public void upload(String fileName, String description, String tags, String coordinates) {
         isUploading = true;
-        fileRepository.upload(base64EncodedFile, fileName, description, "coordinations", tags,
+        fileRepository.upload(base64EncodedFile, fileName, description, coordinates, tags,
                 new FileDataSource.FileCallback<Boolean>() {
                     @Override
                     public void onSuccess(Result<Boolean> result) {

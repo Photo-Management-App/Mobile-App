@@ -49,8 +49,8 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
-    // Add Glide
     implementation(libs.glide)
+    implementation(libs.play.services.location) // for location services
     annotationProcessor(libs.glide.compiler) // for Java projects
 
 }

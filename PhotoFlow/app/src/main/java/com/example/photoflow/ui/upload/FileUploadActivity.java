@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.widget.*;
 
@@ -43,6 +44,8 @@ public class FileUploadActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         String imagePath = getIntent().getStringExtra("imagePath");
+        String coordinates = getIntent().getStringExtra("coords");
+        Log.d("Coordinates", "Received coordinates: " + coordinates);
         String base64EncodedFile = null;
 
         if (imagePath != null) {
@@ -153,7 +156,7 @@ public class FileUploadActivity extends AppCompatActivity {
                 loadingProgressBar.setVisibility(View.VISIBLE);
                 uploadViewModel.upload(
                         fileNameEditText.getText().toString(),
-                        descriptionEditText.getText().toString(), tagsEditText.getText().toString());
+                        descriptionEditText.getText().toString(), tagsEditText.getText().toString(), coordinates);
             }
         });
 

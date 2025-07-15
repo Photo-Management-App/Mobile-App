@@ -18,6 +18,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import android.location.Location;
 
 import android.app.Activity;
 import android.widget.Toast;
@@ -62,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean isFabMenuVisible = false;
     private View fabMenuView;
     private FileRepository fileRepository;
+    private File cameraImageFile;
 
     private ActivityResultLauncher<Intent> activityResultLauncher;
 
@@ -69,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean isUploading = false;
     Bitmap bitmap;
     private Uri photoUri;
+    private String coordinates;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +81,10 @@ public class MainActivity extends AppCompatActivity {
 
         if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[] { Manifest.permission.CAMERA }, 1001);
+        }
+
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[] { Manifest.permission.ACCESS_FINE_LOCATION }, 1002);
         }
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
@@ -158,6 +167,16 @@ public class MainActivity extends AppCompatActivity {
                                         break;
                                 }
 
+                                float[] latLong = new float[2];
+                                if (exif.getLatLong(latLong)) {
+                                    float latitude = latLong[0];
+                                    float longitude = latLong[1];
+                                    Log.d("PhotoLocation", "Latitude: " + latitude + ", Longitude: " + longitude);
+                                    // You can store this into your model or pass it to upload
+                                } else {
+                                    Log.d("PhotoLocation", "No GPS data found in image");
+                                }
+
                                 bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(),
                                         matrix, true);
                                 exifStream.close();
@@ -168,10 +187,7 @@ public class MainActivity extends AppCompatActivity {
                                 Log.d("MainActivity", "Image saved to cache: " + tempFile.getAbsolutePath());
 
                                 isUploading = true;
-                                Intent intent = new Intent(MainActivity.this, FileUploadActivity.class);
-                                intent.putExtra("imagePath", tempFile.getAbsolutePath());
-                                startActivity(intent);
-
+                                getCurrentLocationAndLaunchUpload(tempFile);
                             } catch (IOException e) {
                                 e.printStackTrace();
                                 Toast.makeText(MainActivity.this, "Failed to load image", Toast.LENGTH_SHORT).show();
@@ -278,6 +294,44 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void getCurrentLocationAndLaunchUpload(File tempFile) {
+        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            fusedLocationClient.getLastLocation()
+                    .addOnSuccessListener(this, location -> {
+                        if (location != null) {
+                            double latitude = location.getLatitude();
+                            double longitude = location.getLongitude();
+                            coordinates = latitude + "," + longitude;
+                            Log.d("PhotoLocation", "Device location: " + coordinates);
+
+                            // Pass this to your upload activity
+                            Intent intent = new Intent(MainActivity.this, FileUploadActivity.class);
+                            intent.putExtra("imagePath", tempFile.getAbsolutePath());
+                            intent.putExtra("coords", coordinates); // No coordinates available
+                            startActivity(intent);
+                        } else {
+                            Log.d("PhotoLocation", "Location is null, continuing without it");
+                            launchUploadWithoutLocation(tempFile);
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        e.printStackTrace();
+                        launchUploadWithoutLocation(tempFile);
+                    });
+        } else {
+            Log.d("PhotoLocation", "Permission denied for location");
+            launchUploadWithoutLocation(tempFile);
+        }
+    }
+
+    private void launchUploadWithoutLocation(File tempFile) {
+        Intent intent = new Intent(MainActivity.this, FileUploadActivity.class);
+        intent.putExtra("imagePath", tempFile.getAbsolutePath());
+        startActivity(intent);
     }
 
 }
