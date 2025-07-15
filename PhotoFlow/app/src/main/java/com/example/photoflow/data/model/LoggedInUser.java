@@ -5,19 +5,19 @@ package com.example.photoflow.data.model;
  */
 public class LoggedInUser {
 
-    private static String displayName;
-    private static String email;
+    private String displayName;
+    private String email;
 
     public LoggedInUser( String displayName, String email) {
 
         this.displayName = displayName;
         this.email = email;
     }
-    public static String getDisplayName() {
+    public String getDisplayName() {
         return displayName;
     }
 
-    public static String getEmail() {
+    public String getEmail() {
         return email;
     }
 }

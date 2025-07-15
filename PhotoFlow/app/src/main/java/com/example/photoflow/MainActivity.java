@@ -104,7 +104,8 @@ public class MainActivity extends AppCompatActivity {
         TextView emailTextView = headerView.findViewById(R.id.mailTextView);
         String displayName = getSharedPreferences("user_prefs", MODE_PRIVATE)
                 .getString("displayName", "Guest");
-        String email = LoggedInUser.getEmail();
+        String email = getSharedPreferences("user_prefs", MODE_PRIVATE)
+                .getString("email", null);
         emailTextView.setText(email != null ? email : "No email");
         usernameTextView.setText(displayName);
 

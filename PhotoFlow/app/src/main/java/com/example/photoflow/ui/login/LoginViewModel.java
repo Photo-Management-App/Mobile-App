@@ -10,6 +10,7 @@ import com.example.photoflow.data.LoginRepository;
 import com.example.photoflow.data.Result;
 import com.example.photoflow.data.model.LoggedInUser;
 import com.example.photoflow.R;
+import com.example.photoflow.data.model.UserSession;
 
 public class LoginViewModel extends ViewModel {
 
@@ -32,11 +33,16 @@ public class LoginViewModel extends ViewModel {
     public void login(String username, String password) {
         // Asynchronous login call with callback
         loginRepository.login(username, password, new LoginDataSource.LoginCallback() {
+
             @Override
             public void onSuccess(Result<LoggedInUser> result) {
                 LoggedInUser data = ((Result.Success<LoggedInUser>) result).getData();
-                loginResult.postValue(new LoginResult(new LoggedInUserView(username)));
+
+                UserSession.setUser(data); // ✅ Store the user
+
+                loginResult.postValue(new LoginResult(new LoggedInUserView(data.getDisplayName(), data.getEmail())));
             }
+
 
             @Override
             public void onError(Result.Error error) {

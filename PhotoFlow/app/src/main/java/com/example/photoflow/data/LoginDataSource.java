@@ -79,7 +79,7 @@ public class LoginDataSource {
                     // Save token
                     TokenManager.saveToken(context, token);
 
-                    LoggedInUser realUser = new LoggedInUser(token, email);
+                    LoggedInUser realUser = new LoggedInUser(username, email);
 
                     // Post result on main thread
                     new Handler(Looper.getMainLooper()).post(() -> callback.onSuccess(new Result.Success<>(realUser)));

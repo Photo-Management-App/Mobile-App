@@ -154,6 +154,12 @@ public class LoginActivity extends AppCompatActivity {
                 .putString("displayName", model.getDisplayName())
                 .apply();
 
+        getSharedPreferences("user_prefs", MODE_PRIVATE)
+                .edit()
+                .putString("email", model.getEmail())
+                .apply();
+        
+
         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
         startActivity(intent);
         finish(); // Optional: close LoginActivity so it's not in the back stack

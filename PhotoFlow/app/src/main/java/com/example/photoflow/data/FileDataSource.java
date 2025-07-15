@@ -12,6 +12,7 @@ import com.example.photoflow.data.model.PhotoItem;
 import com.example.photoflow.data.model.TagItem;
 import com.example.photoflow.data.util.ImageUtils;
 import com.example.photoflow.data.util.TokenManager;
+import com.example.photoflow.data.model.UserSession;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -73,7 +74,7 @@ public class FileDataSource {
                 fileObject.put("file", base64EncodedFile);
 
                 JSONObject metadata = new JSONObject();
-                metadata.put("title", "file of " + LoggedInUser.getDisplayName());
+                metadata.put("title", "file of " + UserSession.getUser().getDisplayName());
                 metadata.put("file_name", fileName);
                 metadata.put("description", description);
                 metadata.put("coordinates", coordinates);
