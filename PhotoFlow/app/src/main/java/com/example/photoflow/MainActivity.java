@@ -3,6 +3,9 @@ package com.example.photoflow;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -45,13 +48,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import com.example.photoflow.ui.upload.FileUploadActivity;
 import android.Manifest;
 import android.content.pm.PackageManager;
-
-
 
 public class MainActivity extends AppCompatActivity {
 
@@ -73,9 +75,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.CAMERA}, 1001);
+            requestPermissions(new String[] { Manifest.permission.CAMERA }, 1001);
         }
-
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -94,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
         TextView emailTextView = headerView.findViewById(R.id.mailTextView);
         String displayName = getSharedPreferences("user_prefs", MODE_PRIVATE)
                 .getString("displayName", "Guest");
-        String email = LoggedInUser.getEmail(); 
+        String email = LoggedInUser.getEmail();
         emailTextView.setText(email != null ? email : "No email");
         usernameTextView.setText(displayName);
 
@@ -107,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
-        
+
         // Initialize FileDataSource
         FileDataSource fileDataSource = new FileDataSource(this);
 
@@ -115,51 +116,73 @@ public class MainActivity extends AppCompatActivity {
         fileRepository = FileRepository.getInstance(fileDataSource, this);
 
         activityResultLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == Activity.RESULT_OK) {
-                    Uri uri = null;
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        Uri uri = null;
 
-                    if (result.getData() != null && result.getData().getData() != null) {
-                        // Picked from gallery
-                        uri = result.getData().getData();
-                    } else if (photoUri != null) {
-                        // Captured from camera
-                        uri = photoUri;
-                    }
+                        if (result.getData() != null && result.getData().getData() != null) {
+                            // Picked from gallery
+                            uri = result.getData().getData();
+                        } else if (photoUri != null) {
+                            // Captured from camera
+                            uri = photoUri;
+                        }
 
-                    if (uri != null) {
-                        try {
-                            File cacheDir = getCacheDir();
-                            File tempFile = new File(cacheDir, "temp_image.jpg");
+                        if (uri != null) {
+                            try {
+                                File cacheDir = getCacheDir();
+                                File tempFile = new File(cacheDir, "temp_image.jpg");
 
-                            FileOutputStream fos = new FileOutputStream(tempFile);
+                                FileOutputStream fos = new FileOutputStream(tempFile);
 
-                            bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
-                            fos.flush();
-                            fos.close();
-                            Log.d("MainActivity", "Image saved to cache: " + tempFile.getAbsolutePath());
+                                InputStream inputStream = getContentResolver().openInputStream(uri);
+                                bitmap = BitmapFactory.decodeStream(inputStream);
+                                inputStream.close();
 
-                            isUploading = true;
-                            Intent intent = new Intent(MainActivity.this, FileUploadActivity.class);
-                            intent.putExtra("imagePath", tempFile.getAbsolutePath());
-                            startActivity(intent);
+                                InputStream exifStream = getContentResolver().openInputStream(uri);
+                                ExifInterface exif = new ExifInterface(exifStream);
+                                int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                                        ExifInterface.ORIENTATION_NORMAL);
 
+                                Matrix matrix = new Matrix();
+                                switch (orientation) {
+                                    case ExifInterface.ORIENTATION_ROTATE_90:
+                                        matrix.postRotate(90);
+                                        break;
+                                    case ExifInterface.ORIENTATION_ROTATE_180:
+                                        matrix.postRotate(180);
+                                        break;
+                                    case ExifInterface.ORIENTATION_ROTATE_270:
+                                        matrix.postRotate(270);
+                                        break;
+                                }
 
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            Toast.makeText(MainActivity.this, "Failed to load image", Toast.LENGTH_SHORT).show();
+                                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(),
+                                        matrix, true);
+                                exifStream.close();
+
+                                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+                                fos.flush();
+                                fos.close();
+                                Log.d("MainActivity", "Image saved to cache: " + tempFile.getAbsolutePath());
+
+                                isUploading = true;
+                                Intent intent = new Intent(MainActivity.this, FileUploadActivity.class);
+                                intent.putExtra("imagePath", tempFile.getAbsolutePath());
+                                startActivity(intent);
+
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                Toast.makeText(MainActivity.this, "Failed to load image", Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            Toast.makeText(MainActivity.this, "No image selected", Toast.LENGTH_SHORT).show();
                         }
                     } else {
-                        Toast.makeText(MainActivity.this, "No image selected", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Action cancelled", Toast.LENGTH_SHORT).show();
                     }
-                } else {
-                    Toast.makeText(MainActivity.this, "Action cancelled", Toast.LENGTH_SHORT).show();
-                }
-            }
-        );
-
+                });
 
     }
 
@@ -194,7 +217,8 @@ public class MainActivity extends AppCompatActivity {
 
             fabMenuView.findViewById(R.id.button_camera).setOnClickListener(v -> {
                 try {
-                    File imageFile = File.createTempFile("camera_photo", ".jpg", getExternalFilesDir(Environment.DIRECTORY_PICTURES));
+                    File imageFile = File.createTempFile("camera_photo", ".jpg",
+                            getExternalFilesDir(Environment.DIRECTORY_PICTURES));
                     photoUri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", imageFile);
 
                     Intent iCamera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
