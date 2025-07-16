@@ -44,6 +44,6 @@
     <string name="file_upload_worked">"File upload worked"</string>
     <string name="fragment_album_detail">"Photos in album"</string>
     <string name="error_updating_picture">"Error updating profile picture"</string>
-        <string name="base_url">http://192.168.0.145:8000</string>
-<!-- <string name="base_url">http://ec2-13-60-9-150.eu-north-1.compute.amazonaws.com:8000</string>-->
+<!--        <string name="base_url">http://192.168.0.145:8000</string>-->
+ <string name="base_url">http://ec2-13-60-9-150.eu-north-1.compute.amazonaws.com:8000</string>
 </resources>
