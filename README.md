@@ -30,8 +30,5 @@ To install the application on your Android device:
 - **Architecture**: MVVM
 - **API**: Communicates with Go backend over HTTP
 
----
-
-💬 For issues or contributions, feel free to open an issue or pull request!
 
 
