@@ -74,7 +74,12 @@ public class LoginDataSource {
                     String token = json.getString("token");
                     String email = json.getString("email");
                     String profilePicId = json.optString("profile", "-1"); // Optional field
-                    long profilePicIdLong = profilePicId.equals("-1") ? -1 : Long.parseLong(profilePicId);
+                    long profilePicIdLong;
+                    if (profilePicId.equals("-1") || profilePicId.isEmpty()) {
+                        profilePicIdLong = -1;
+                    } else {
+                        profilePicIdLong = Long.parseLong(profilePicId);
+                    }
 
                     Log.d(TAG, "Login successful. Token: " + token + ", Email: " + email);
 
